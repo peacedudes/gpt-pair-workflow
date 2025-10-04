@@ -1,0 +1,67 @@
+
+PART 1 — PROJECT BRIEF FOR NEW ASSISTANT
+
+Essentials
+- Goal: Extract and stabilize “Voice I/O” into a reusable Swift package (VoiceKit) and integrate it in the VoiceLogin app.
+- Status: Working locally and on GitHub. App unit tests run. Package tests run. Concurrency/permissions issues fixed for Swift 6.
+- Repos/paths:
+  - App repo: VoiceLogin (regular Xcode app project).
+  - Package repo: VoiceKit (sibling folder on disk; also pushed to GitHub).
+- Xcode/Swift:
+  - Swift tools-version 6.0; swiftLanguageModes [.v6]
+  - Platforms: iOS 17.0+, macOS 14.0+
+
+Package structure
+- Products:
+  - VoiceKitCore: non-UI APIs (RealVoiceIO, ScriptedVoiceIO, RecognitionContext, TTS* models, NameMatch).
+  - VoiceKitUI: SwiftUI voice picker with persistence (VoicePickerView + VoiceProfilesStore).
+- Notable files:
+  - VoiceKit/Sources/VoiceKitCore/VoiceIO.swift
+    - Public API protocol: @MainActor protocol VoiceIO
+    - Implementations: @MainActor final class RealVoiceIO; @MainActor final class ScriptedVoiceIO
+    - TTS types: TTSVoiceInfo, TTSVoiceProfile, TTSMasterControl; protocol TTSConfigurable
+    - RecognitionContext (freeform/name/number)
+    - Concurrency fixes:
+      - PermissionBridge (nonisolated bridge) for TCC/microphone and speech auth
+      - AVSpeechSynthesizer delegate avoids crossing actors with AVSpeechUtterance (uses ObjectIdentifier key + copied String)
+      - Audio tap closure uses a tiny @unchecked Sendable LevelSink that posts level updates to main
+  - VoiceKit/Sources/VoiceKitCore/NameMatch.swift
+    - normalizeKey with ligature handling, dash normalization, zero-width removal, diacritic folding, safe tokenization
+    - token-aware stringDistanceScore
+  - VoiceKit/Sources/VoiceKitUI/VoicePickerView.swift
+    - View + ViewModel + Store (profiles, favorites, active/hidden, language filter)
+    - Uses TTSConfigurable and TTS* models from Core
+  - Tests/VoiceKitCoreTests (package tests)
+    - CoreSanityTests.swift (public types reachable)
+    - NameMatchTests.swift (normalization and distance)
+    - ScriptedVoiceIOPackageTests.swift (deterministic listen flow)
+- Removed earlier placeholders (they caused module shadowing and test failures).
+
+App integration
+- The app wraps the package picker to retain the name:
+  - VoiceLogin/VoicePickerView.swift is a thin wrapper that imports VoiceKitCore + VoiceKitUI and forwards to VoiceKitUI.VoicePickerView.
+- All app code that uses VoiceIO, RealVoiceIO, ScriptedVoiceIO, RecognitionContext, TTSConfigurable imports VoiceKitCore.
+- Duplicates removed from the app target (e.g., old ScriptedVoiceIO, old in-app VoicePicker); if kept for reference, Target Membership unchecked.
+
+Concurrency/permissions notes (Swift 6)
+- RealVoiceIO, VoiceIO protocol, and all public callbacks are @MainActor.
+- PermissionBridge wraps:
+  - iOS 17+ mic: AVAudioApplication.requestRecordPermission(completionHandler:)
+  - macOS mic: AVCaptureDevice.requestAccess(for: .audio, completionHandler:)
+  - Speech auth: SFSpeechRecognizer.requestAuthorization
+  - All bridges are nonisolated with @Sendable closures, then we resume continuations back on the main actor to avoid “BUG IN CLIENT OF LIBDISPATCH” queue assertions.
+- Audio tap does not capture @MainActor self; it posts meter updates via a LevelSink back to the main actor.
+- AVSpeechSynthesizer delegate callbacks compute ObjectIdentifier(utterance) and copy strings before hopping to @MainActor, avoiding “sending utterance” data-race diagnostics.
+
+How to work (preferred)
+- Keep the app pointed at the local sibling VoiceKit package while iterating (fastest).
+- Commit and tag VoiceKit in its own repo when you reach a stable point; optionally switch the app to the remote dependency to verify.
+- Communication preference: avoid heavy formatting; use bullet lists and code blocks only.
+
+Backlog / next steps candidates
+- Add GitHub Actions CI for VoiceKit (macos-latest, build + package tests).
+- Add DocC docs or expand README sections (this guide can seed it).
+- Extend package tests to cover RealVoiceIO logic that can run without devices (e.g., trimming function with synthetic buffers).
+- Optional: theming hooks for VoicePickerView (colors/fonts).
+- Optional: sample app in the VoiceKit repo (minimal SwiftUI app demonstrating picker + script).
+

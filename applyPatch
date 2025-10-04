@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# applyPatch — fix hunk counts, then git apply.
+# Usage:
+#   ./applyPatch                # reads diff from clipboard (pbpaste)
+#   pbpaste | ./applyPatch      # reads diff from stdin
+#   ./applyPatch patch.diff     # reads diff from file
+#   ./applyPatch --from-clipboard
+
+set -euo pipefail
+
+tmp_in="$(mktemp -t applyPatch.in.XXXXXX)"
+tmp_fixed="$(mktemp -t applyPatch.fixed.XXXXXX)"
+cleanup() { rm -f "$tmp_in" "$tmp_fixed"; }
+trap cleanup EXIT
+
+read_from_stdin=false
+read_from_file=""
+read_from_clipboard=false
+
+# Parse args
+if [[ $# -gt 0 ]]; then
+  case "${1:-}" in
+    --from-clipboard)
+      read_from_clipboard=true
+      ;;
+    -*)
+      echo "Unknown option: $1" >&2
+      echo "Usage: ./applyPatch [--from-clipboard] | pbpaste | ./applyPatch | ./applyPatch patch.diff" >&2
+      exit 2
+      ;;
+    *)
+      read_from_file="$1"
+      ;;
+  esac
+fi
+
+# Decide input source
+if [ ! -t 0 ] && [[ -z "$read_from_file" && "$read_from_clipboard" = false ]]; then
+  # stdin is piped
+  read_from_stdin=true
+elif [[ -n "$read_from_file" ]]; then
+  :
+elif [[ "$read_from_clipboard" = true || -t 0 ]]; then
+  # default to clipboard when no stdin and no file
+  read_from_clipboard=true
+fi
+
+# Load input
+if [[ "$read_from_stdin" = true ]]; then
+  cat > "$tmp_in"
+elif [[ -n "$read_from_file" ]]; then
+  if [[ ! -f "$read_from_file" ]]; then
+    echo "File not found: $read_from_file" >&2
+    exit 1
+  fi
+  cp "$read_from_file" "$tmp_in"
+elif [[ "$read_from_clipboard" = true ]]; then
+  if ! command -v pbpaste >/dev/null 2>&1; then
+    echo "pbpaste not found. Provide a file or pipe stdin." >&2
+    exit 1
+  fi
+  pbpaste > "$tmp_in"
+  if [[ ! -s "$tmp_in" ]]; then
+    echo "Clipboard is empty or not a diff. Copy a unified diff to the clipboard and retry." >&2
+    exit 1
+  fi
+else
+  echo "No input detected. Use stdin, a file, or --from-clipboard." >&2
+  exit 1
+fi
+
+# Always run the fixer (no-op on clean diffs)
+if ! command -v fixDiffCounts.swift >/dev/null 2>&1; then
+  echo "fixDiffCounts.swift not found on PATH." >&2
+  exit 1
+fi
+fixDiffCounts.swift -v -f "$tmp_in" > "$tmp_fixed"
+
+# Verify and apply
+git apply --check -v "$tmp_fixed"
+git apply "$tmp_fixed"
+echo "Applied patch."
