@@ -1,0 +1,54 @@
+# Quick Start — Peek → Patch → Apply with GPT-5
+Audience: developers using GPT-5 to edit a git repo via Terminal.
+
+What you need
+- macOS, git, Terminal
+- In repo root: applyPatch, fixDiffCounts.swift, sharefiles (executable)
+
+One-time setup
+- chmod +x applyPatch fixDiffCounts.swift sharefiles
+- Optionally add them to PATH or move to scripts/
+
+Loop
+1) Share context to the assistant:
+```bash
+./sharefiles    # copies repo bytes to clipboard — paste into chat
+```
+2) The assistant will request peeks. Run and paste results verbatim:
+```bash
+nl -ba PATH/TO/FILE | sed -n 'START,ENDp'
+```
+3) Apply returned patches from clipboard:
+```bash
+pbpaste | ./applyPatch
+# or: ./applyPatch --from-clipboard
+```
+4) Test and report a short result:
+```bash
+xcodebuild -scheme YourScheme -destination "platform=iOS Simulator,name=iPhone SE (3rd generation),arch=arm64" build | head -n 200
+# or: swift test -q
+```
+5) Repeat: the assistant re-peeks before each new patch.
+
+Patch rules (what to expect)
+- Pure unified diffs only (--- a/path, +++ b/path, @@ hunks)
+- LF endings; the patch ends with a final newline
+- Minimal, surgical changes anchored to peeked bytes
+- If a patch fails: re-peek the exact region; don’t guess
+
+Example peek the assistant might ask for
+```bash
+nl -ba Tests/SomeFile.swift | sed -n '60,110p'
+```
+
+Example apply from a saved file
+```bash
+git apply --check -v patch.diff && git apply patch.diff
+```
+
+Tips
+- Keep patches small; one concern per patch
+- Always paste commands/patches/logs in fenced code blocks that end with a newline
+- New files in diffs use: --- /dev/null and +++ b/path with @@ -0,0 +N,N @@
+
+That’s it. Share → Peek → Patch → Apply → Test → Repeat.
