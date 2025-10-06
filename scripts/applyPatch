@@ -5,6 +5,11 @@
 #   pbpaste | scripts/applyPatch       # reads diff from stdin
 #   scripts/applyPatch patch.diff      # reads diff from file
 #   scripts/applyPatch --from-clipboard
+# Options (clipboard convenience):
+#   --copy-diff        Copy git diff of affected paths to clipboard after apply (default)
+#   --no-copy-diff     Do not copy diff after apply
+# Env:
+#   APPLY_PATCH_COPY=0|1  Override default copying behavior
 
 set -euo pipefail
 
@@ -16,6 +21,8 @@ trap cleanup EXIT
 read_from_stdin=false
 read_from_file=""
 read_from_clipboard=false
+# Default: copy diff after apply unless explicitly disabled
+copy_diff="${APPLY_PATCH_COPY:-1}"
 
 # Parse args
 if [[ $# -gt 0 ]]; then
@@ -23,9 +30,15 @@ if [[ $# -gt 0 ]]; then
     --from-clipboard)
       read_from_clipboard=true
       ;;
+    --copy-diff)
+      copy_diff=1
+      ;;
+    --no-copy-diff)
+      copy_diff=0
+      ;;
     -*)
       echo "Unknown option: $1" >&2
-      echo "Usage: scripts/applyPatch [--from-clipboard] | pbpaste | scripts/applyPatch | scripts/applyPatch patch.diff" >&2
+      echo "Usage: scripts/applyPatch [--from-clipboard] [--copy-diff|--no-copy-diff] | pbpaste | scripts/applyPatch | scripts/applyPatch patch.diff" >&2
       exit 2
       ;;
     *)
@@ -68,15 +81,8 @@ else
   exit 1
 fi
 
-# Resolve fixers: prefer Swift, fall back to awk, search scripts/ if not on PATH
+# Resolve fixer: use awk implementation; search PATH, then scripts/
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-fix_swift=""
-if command -v fixDiffCounts.swift >/dev/null 2>&1; then
-  fix_swift="$(command -v fixDiffCounts.swift)"
-elif [[ -x "$script_dir/fixDiffCounts.swift" ]]; then
-  fix_swift="$script_dir/fixDiffCounts.swift"
-fi
-
 fix_awk=""
 if command -v fix-diff-counts.sh >/dev/null 2>&1; then
   fix_awk="$(command -v fix-diff-counts.sh)"
@@ -84,12 +90,10 @@ elif [[ -x "$script_dir/fix-diff-counts.sh" ]]; then
   fix_awk="$script_dir/fix-diff-counts.sh"
 fi
 
-if [[ -n "$fix_swift" ]]; then
-  "$fix_swift" -f "$tmp_in" > "$tmp_fixed"
-elif [[ -n "$fix_awk" ]]; then
+if [[ -n "$fix_awk" ]]; then
   "$fix_awk" "$tmp_in" > "$tmp_fixed"
 else
-  echo "No diff count fixer found (need fixDiffCounts.swift or fix-diff-counts.sh)." >&2
+  echo "No diff count fixer found (need fix-diff-counts.sh in PATH or scripts/)." >&2
   exit 1
 fi
 
@@ -98,3 +102,31 @@ git apply --check -v "$tmp_fixed"
 git apply "$tmp_fixed"
 echo "Applied patch."
 
+# If requested, copy a focused diff of affected paths to clipboard
+if [[ "$copy_diff" == "1" ]]; then
+  # Extract changed paths from the fixed patch:
+  # additions/changes via +++ b/..., deletions via --- a/... (since +++ may be /dev/null)
+  mapfile -t add_or_change < <(grep -E '^\+\+\+ b/' "$tmp_fixed" | sed -E 's@^\+\+\+ b/@@' | grep -v '^/dev/null' || true)
+  mapfile -t deletions_a  < <(grep -E '^--- a/' "$tmp_fixed" | sed -E 's@^--- a/@@' | grep -v '^/dev/null' || true)
+
+  declare -A seen_paths=()
+  declare -a paths=()
+  for p in "${add_or_change[@]}"; do
+    [[ -n "$p" && -z "${seen_paths[$p]:-}" ]] && { paths+=("$p"); seen_paths["$p"]=1; }
+  done
+  for p in "${deletions_a[@]}"; do
+    [[ -n "$p" && -z "${seen_paths[$p]:-}" ]] && { paths+=("$p"); seen_paths["$p"]=1; }
+  done
+
+  if [[ ${#paths[@]} -gt 0 ]]; then
+    if command -v pbcopy >/dev/null 2>&1; then
+      git diff -- "${paths[@]}" | pbcopy
+      echo "Copied git diff for ${#paths[@]} path(s) to clipboard:"
+      for p in "${paths[@]}"; do echo "  - $p"; done
+    else
+      echo "Note: pbcopy not found; skipped --copy-diff clipboard step."
+    fi
+  else
+    echo "No paths detected in patch headers; skipped --copy-diff."
+  fi
+fi

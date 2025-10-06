@@ -33,6 +33,8 @@ scripts/applyPatch
   - Ensures a trailing newline.
   - Prefers fixDiffCounts.swift; falls back to fix-diff-counts.sh.
   - Runs git apply --check first, then applies if clean.
+  - If the chat UI mangles fenced blocks inside patches, ask the assistant for a here-doc command to write the file(s)
+    locally, then review with: git diff -- path/to/file
 
 scripts/fixDiffCounts.swift
 - Purpose: Recompute unified-diff hunk lengths; ensure trailing newline.

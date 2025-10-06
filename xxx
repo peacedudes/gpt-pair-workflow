@@ -1,0 +1,21 @@
+{ cat > README.md <<'EOF'
+# GPT Peek → Patch → Apply
+
+Clipboard-first workflow to collaborate with GPT on any git repo.
+
+Start here
+```bash
+scripts/sharefiles
+```
+Paste the clipboard into a GPT chat, then follow the Peek → Patch → Apply → Test loop.
+
+Docs
+- See docs/quick-start.md for the 2‑minute guide.
+
+Privacy
+- Don’t use this on private or unshareable repos without permission; file contents will be pasted into chat.
+
+Non‑macOS
+- Clipboard tools differ; ask GPT to adapt scripts if needed.
+EOF
+git diff -- README.md; } | pbcopy

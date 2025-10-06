@@ -7,9 +7,7 @@
 set -euo pipefail
 
 awk '
-function flush_hunk(    oldLen,newLen,i) {
-  if (!in_hunk) return
-  oldLen = c + d
+function flush_hunk(    oldLen,newLen,i) { if (!in_hunk) return; oldLen = c + d
   newLen = c + a
   # Re-emit corrected header, preserving any tail after @@
   printf("@@ -%d,%d +%d,%d @@%s\n", oldStart, oldLen, newStart, newLen, tail)
@@ -18,32 +16,25 @@ function flush_hunk(    oldLen,newLen,i) {
   in_hunk=0; nb=0; c=0; d=0; a=0; tail=""
 }
 
-# Detect hunk header: keep optional lengths and any trailing text after @@
-# Examples:
-#   @@ -1,7 +1,7 @@
-#   @@ -10 +10 @@ func something
-function is_hunk_header(s,   m) {
-  return match(s, /^@@ -([0-9]+)(,([0-9]+))? \+([0-9]+)(,([0-9]+))? @@(.*)$/, m)
-}
-
-BEGIN {
-  in_hunk=0; nb=0; c=0; d=0; a=0; tail=""
-}
+BEGIN { in_hunk=0; nb=0; c=0; d=0; a=0; tail="" }
 
 {
   line = $0
 
-  if (is_hunk_header(line)) {
+  if (substr(line,1,2)=="@@") {
     # Starting a new hunk: flush the previous one first
     flush_hunk()
-    oldStart = 0 + substr(line, RSTART+4, RLENGTH) # placeholder; we parse from match() array below
-    # match() already filled m[]
-    # Extract start numbers from the last match() in is_hunk_header via the builtin arrays
-    # Re-run match here to get m[] in this scope
-    match(line, /^@@ -([0-9]+)(,([0-9]+))? \+([0-9]+)(,([0-9]+))? @@(.*)$/, m)
-    oldStart = m[1]+0
-    newStart = m[4]+0
-    tail     = m[7]
+    # Extract numbers in order: oldStart[,oldLen] newStart[,newLen]
+    s = line
+    i = 0
+    while (match(s, /[0-9]+/)) {
+      i++
+      nums[i] = substr(s, RSTART, RLENGTH)
+      s = substr(s, RSTART + RLENGTH)
+    }
+    oldStart = (i>=1 ? nums[1]+0 : 0)
+    newStart = (i>=3 ? nums[3]+0 : (i>=2 ? nums[2]+0 : 0))
+    p1 = index(line, "@@"); s2 = substr(line, p1+2); p2 = index(s2, "@@"); tail = (p2>0 ? substr(s2, p2+2) : "")
     in_hunk=1; nb=0; c=0; d=0; a=0
     next
   }
@@ -61,7 +52,7 @@ BEGIN {
     if      (first == " ") c++
     else if (first == "-") d++
     else if (first == "+") a++
-    else if (first == "\\") { /* do not count */ }
+    else if (first == "\\") { ; }
     # Buffer body lines verbatim
     body[++nb] = line
     next

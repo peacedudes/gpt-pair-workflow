@@ -58,3 +58,16 @@ Out‑of‑band local edits
 
 When in doubt: re‑peek small
 - The fastest way to unstick is to share a small, numbered slice of exactly what the hunk targets. The assistant will align on bytes and resend a minimal patch.
+
+UI mangled my fenced blocks (patches with embedded ```bash, etc.)
+- Symptom: The chat UI or clipboard strips/rewraps inner fences, breaking a unified diff.
+- Quick fixes:
+  - Ask the assistant for a here‑doc command to write the file locally, for example:
+    - cat > path/to/file <<'EOF' … EOF
+    - Then run: git diff -- path/to/file to review before committing.
+  - Ask for a full‑file replacement (not a diff), paste it into the file, and review with git diff yourself.
+  - If you must use a diff, request smaller, fence‑free diffs per file (avoid embedding example code fences inside the patch).
+
+Avoid pasting sensitive or very large files
+- Don’t use this workflow on private code without permission.
+- If a file is too large or sensitive, skip sharing it and describe it instead, or share only the minimal numbered slices needed for the change.
