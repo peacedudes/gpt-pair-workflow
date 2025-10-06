@@ -3,6 +3,10 @@
 Why this
 - GPT can’t clone/push to your repo or keep uploaded zips “alive” across turns. A plain‑text repo dump persists in chat.
 - We keep a tight loop: Share bytes → Peek → Patch → Apply → Test → Repeat. Small, anchored diffs apply cleanly.
+- Chat UIs slow down as context grows. This clipboard-first loop keeps each turn short and fast.
+
+Privacy
+- Don’t run this on private or unshareable repos unless permission is granted. This workflow pastes file contents into chat.
 
 Tools (scripts/)
 - sharefiles — copies repo metadata + all tracked files to clipboard as fenced code blocks. Paste once per session.
@@ -12,8 +16,9 @@ Tools (scripts/)
 
 Contract (safety + cadence)
 - One action per step; everything clipboard‑driven.
-- The assistant only asks you to run obvious commands. You should refuse anything you don’t understand at a glance.
+- The assistant only requests obvious, low‑risk commands; the human operator should refuse anything unclear at a glance.
 - Always paste code/patches/logs as fenced code blocks that end with a newline.
+- The assistant batches multiple peeks into one block so the human runs one command per step.
 
 The loop
 1) Share repo (once per session):
@@ -21,7 +26,7 @@ The loop
 scripts/sharefiles
 ```
 2) Run peeks the assistant asks for; paste output verbatim.
-What peeks do: “nl -ba” numbers every line (including blanks). “sed -n 'S,Ep'” prints just that slice. You’ll usually send a small bundle:
+What peeks do: nl -ba adds visible line numbers (including blanks) without changing bytes. sed -n 'START,ENDp' prints only that range. Both are read-only and safe. Typical bundle requested by the assistant:
 ```bash
 {
   echo "=== Sources/Widget.swift (1–140) ==="
@@ -48,6 +53,34 @@ scripts/xcb.sh test
 
 Why auto‑fix counts?
 - Models often miscount @@ lengths (oldLen/newLen). We always fix on the way out, so small count errors don’t derail progress.
+- No manual hunk‑length checks are required; provide clean peeks and apply the returned diff.
+
+Unified diff in brief (what you’ll paste back)
+- One block that ends with a newline. For each file:
+  - --- a/path/to/file
+  - +++ b/path/to/file
+  - @@ -oldStart,oldLen +newStart,newLen @@
+  - Lines: space = context, - = deletion, + = addition (LF endings)
+
+Replace one line (example)
+```diff
+--- a/Sources/Foo.swift
++++ b/Sources/Foo.swift
+@@ -42,3 +42,3 @@
+    let x = foo()
+-   let y = oldCall(x)
++   let y = newCall(x)
+    return y
+```
+
+Insert one line (example)
+```diff
+--- a/Sources/Foo.swift
++++ b/Sources/Foo.swift
+@@ -99,2 +99,3 @@
+    vm.refresh()
++   vm.bootstrapIfNeeded()
+```
 
 Patch expectations
 - Pure unified diff in one fenced block:
