@@ -30,6 +30,7 @@ What this is not
 ## Disclaimer
 - Provided as-is, without warranty or liability. You are responsible for what you run and what you share.
 - Review and understand commands before running them. Refuse anything unclear or risky.
+- Not affiliated with OpenAI or any model/provider.
 
 Learn more
 - Start with docs/00-overview.md (concepts, privacy, cadence), then docs/01-quick-start.md (scripts and step-by-step).
