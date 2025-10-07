@@ -56,7 +56,7 @@ The loop
 } | toClip
 ```
 3) Assistant prepares and returns a fenced code block with its patch.
-4) Copy the returned patch, and Apply it directly from clipboard (applyPatch does pbpaste internally):
+4) Copy the returned patch, and apply it directly from the clipboard (applyPatch reads from the clipboard by default):
 ```bash
 applyPatch
 ```
