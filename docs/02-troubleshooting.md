@@ -36,7 +36,7 @@ Full‑file replacement instead of diff
   2) You overwrite the file locally (here‑doc or editor).
   3) Run git diff -- path/to/file to confirm the change and proceed.
 
-Deleting a file via diff
+Deleting a file via diff is NOT recommended. It's blabbly and often fails.
 - Unified diff representation:
   - Header: --- a/path and +++ /dev/null
   - Body: all lines removed
@@ -55,7 +55,7 @@ Line endings and final newline
 - Fix: applyPatch ensures a final newline; if a tool converts CRLF->LF or vice‑versa, re‑peek to re‑sync before next patch.
 
 Clipboard issues (non‑macOS)
-- The assistant can provide adapted scripts on request.
+- Only macOS has been tested. Linux/Windows should work, and the assistant can provide adapted scripts as needed.
 
 Out‑of‑band local edits
 - If you change files locally between peeks, the assistant’s next diff may not match.
@@ -63,10 +63,10 @@ Out‑of‑band local edits
 
 “I only do one thing at a time”
 - That’s by design. The assistant batches requests so you run exactly one command per step (peek, apply, build/test).
-- If a step looks risky or unclear, say so; the assistant will simplify or explain.
+- If a step looks risky or unclear, say so; the assistant will simplify or explain. If the assistant asks for several separate peeks, remind them that this makes busywork for you and ask commands to always be grouped.
 
 When in doubt: re‑peek small
-- The fastest way to unstick is to share a small, numbered slice of exactly what the hunk targets. The assistant will align on bytes and resend a minimal patch.
+- The fastest way to unstick is to share a small, numbered slice of exactly what the hunk targets. The assistant will align on bytes and resend a minimal patch.  Adjust the patch size and re-peek if necessary to include the exact contents to be changed. Never guess even when you think you know.
 
 UI mangled my fenced blocks (patches with embedded ```bash, etc.)
 - Symptom: The chat UI or clipboard strips/rewraps inner fences, breaking a unified diff.
@@ -78,5 +78,6 @@ UI mangled my fenced blocks (patches with embedded ```bash, etc.)
   - If you must use a diff, request smaller, fence‑free diffs per file (avoid embedding example code fences inside the patch).
 
 Avoid pasting sensitive or very large files
-- Don’t use this workflow on private code without permission.
+- Don’t use this workflow on private code without permission. Don't share code with private keys or passwords.
 - If a file is too large or sensitive, skip sharing it and describe it instead, or share only the minimal numbered slices needed for the change.
+

@@ -16,13 +16,6 @@ Tools (scripts/)
   - xcb.sh — sample build/test with short logs copied to clipboard (stderr+stdout). Create your own by asking GPT to make something to test your project and copy the results it wants to see to the clipboard.
   - toClip / fromClip - Agnostic clipboard adapters to copy to or paste clipboard contents to stdout.
 
-Assistant’s first reply (template)
-- In the repo you want to work on, run this and paste the clipboard output here:
-```bash
-sharefiles
-```
-- After I see the snapshot, I’ll propose one tiny, low‑risk first change, request a minimal peek of the exact lines I’ll touch, and return a unified diff you can apply with applyPatch.
-
 Contract (safety + cadence)
 - One action per step; everything clipboard‑driven.
 - The assistant only requests obvious, low‑risk commands; the human operator should refuse anything unclear at a glance.
@@ -34,12 +27,14 @@ Share This repo (once per session)
 ```bash
 scripts/sharefiles
 ```
-Share Your Project repo (usually once per session)
-- From your local repo, do the same and paste the clipboard to GPT.
+Assistant’s first reply (template)
+- In the repo you want to work on, run this and paste the clipboard output here:
 ```bash
 sharefiles
 ```
-Choose something the assistant will work on first.
+- After I see the snapshot, I’ll propose one tiny, low‑risk first change, request a minimal peek of the exact lines I’ll touch, and return a unified diff you can apply with applyPatch.
+
+Share Your Project repo (usually once per session), and choose something the assistant will work on first.
 - Collaborate as makes sense. Partnership works well.
 
 The loop
