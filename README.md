@@ -13,10 +13,10 @@ Problems it solves
 - GPT often makes patch files that fail with line counts off by one. Easily auto-corrected.
 
 How it works (at a glance)
-- Share a repo snapshot once to establish context.
-- If you'll be working in a different repo, run sharefiles in that repo and paste its snapshot to the assistant.
+- Run sharefiles in this repo and paste clipboard to the assistant to share workflow mechanics.
+- Move to the local repo you'll be working with, run sharefiles and paste its snapshot to the assistant.
 - Agree on a concrete goal or change.
-- Iterate: the assistant requests targeted read-only “peeks” to specific code it will change, returns a unified diff; the operator applies it and runs checks.
+- Iterate: the assistant requests targeted read-only “peeks” to specific code it will change, creates a unified diff (patch); the operator applies it and runs checks.
 - Repeat until the goal is complete.
 
 What this is not
