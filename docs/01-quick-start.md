@@ -1,12 +1,12 @@
 # Quick Start — Peek → Patch → Apply (clipboard-first)
 
 Why this
-- GPT can’t clone/push to your repo or keep uploaded zips “alive” across turns. A plain‑text repo dump persists in chat.
-- We keep a tight loop: Share repo, then Peek → Patch → Apply → Test → Repeat.*
+- GPT can’t clone/push to your repo, and forgets contents of a zip archive quickly. A plain‑text repo dump can persist.
+- We keep a tight loop: Share repo, then Peek → Patch → Apply → Test → Repeat.
 - Chat UIs slow down as context grows. Starting a fresh instance and getting back to speed quickly is critical.
 
 Privacy Warning
-- Don’t share private or unshareable repos without permission. Repeat that out loud and pause.  This workflow pastes file contents into GPT or similar chat.  That may not be ok for your situation, especially professional.  Think before using.
+- Don’t share private or unshareable repos without permission. Repeat that out loud and pause.  This workflow works by pasting the contents of all text files in a repo into GPT or similar chat.  That may not be ok for your situation, especially professional. Think before using.
 
 Tools (scripts/)
 - Put these in your $PATH, copy them to your $HOME/bin, or otherwise make them accessible.
@@ -14,7 +14,7 @@ Tools (scripts/)
   - applyPatch — reads a diff from clipboard (or file), auto‑fixes hunk counts, ensures final newline, then git apply.
   - fix-diff-counts.sh — recomputes @@ hunk lengths from the body of the changes made.
   - xcb.sh — sample build/test with short logs copied to clipboard (stderr+stdout). Create your own by asking GPT to make something to test your project and copy the results it wants to see to the clipboard.
-  - Clipboard adapters for macOS, Linux, and Windows are built in via toClip/fromClip.
+  - toClip / fromClip - Agnostic clipboard adapters to copy to or paste clipboard contents to stdout.
 
 Assistant’s first reply (template)
 - In the repo you want to work on, run this and paste the clipboard output here:
