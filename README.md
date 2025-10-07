@@ -1,5 +1,7 @@
 # GPT Pair programming
 
+[![ShellCheck](https://github.com/peacedudes/gpt-pair-workflow/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/peacedudes/gpt-pair-workflow/actions/workflows/shellcheck.yml)
+
 Clipboard-first workflow for collaborating with GPT on real codebases.
 
 What this is
