@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# toClip — read stdin and set clipboard contents (cross‑platform)
+set -euo pipefail
+
+# macOS
+if command -v pbcopy >/dev/null 2>&1; then
+  exec pbcopy
+fi
+# Wayland (Linux)
+if command -v wl-copy >/dev/null 2>&1; then
+  exec wl-copy
+fi
+# X11 (xclip)
+if command -v xclip >/dev/null 2>&1; then
+  exec xclip -selection clipboard -i
+fi
+# X11 (xsel)
+if command -v xsel >/dev/null 2>&1; then
+  exec xsel --clipboard --input
+fi
+# Windows (PowerShell)
+if command -v powershell.exe >/dev/null 2>&1; then
+  # Read all stdin and set clipboard
+  exec powershell.exe -NoLogo -NoProfile -Command "Set-Clipboard -Value ([Console]::In.ReadToEnd())"
+fi
+
+echo "toClip: no clipboard tool found (tried: pbcopy, wl-copy, xclip, xsel, powershell)" >&2
+exit 1
+

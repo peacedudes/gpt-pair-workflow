@@ -14,28 +14,29 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
   - Each tracked file as a fenced block with language tag when obvious.
 - Notes:
   - Uses git ls-files; ordering is path-sorted.
-  - Clipboard: macOS pbcopy by default; adapt for your platform if needed.
+  - Clipboard: requires toClip/fromClip on PATH (see Clipboard adapters below).
 
 ### applyPatch
 - Purpose: Accepts a unified diff, auto-fixes hunk counts, then git apply.
 - Why: Models often miscount @@ lengths; fixing on apply prevents trivial failures.
 - Usage:
-  - applyPatch # Read from clipboard (default)
-  - applyPatch --from-clipboard # same, explicitly:
-  - pbpaste | applyPatch # From stdin:
-  - applyPatch path/to/patch.diff # From file:
-- Flags:
-  - --no-copy-diff # disable copying the focused git diff to clipboard (default is on)
-  - env override: APPLY_PATCH_COPY=0|1
+  - applyPatch                 # read from clipboard (default)
+  - applyPatch -               # read from stdin
+  - applyPatch path/to/patch.diff  # read from file
 - Behavior:
   - Recomputes hunk lengths with fix-diff-counts.sh and ensures a trailing newline.
   - Runs git apply --check first, then applies if clean.
-  - Copies a focused git diff of affected paths to the clipboard by default (use --no-copy-diff or APPLY_PATCH_COPY=0 to disable).
+  - Streams stdout+stderr to terminal and copies the same output to the clipboard via toClip (tee).
   - If the chat UI mangles fenced blocks inside patches, ask the assistant for a here-doc command to write the file(s)
     locally, then review with: git diff -- path/to/file
 
+## toClip and fromClip
+- Clipboard adapters. OS-agnostic shims to copy from/to clipboard.
+  - fromClip: write clipboard contents to stdout
+  - toClip:   read stdin and set clipboard contents
+
 ### fix-diff-counts.sh
-- Purpose: awk hunk-length fixer used by scripts/applyPatch.
+- Purpose: awk hunk-length fixer; used to correct ai model's trivial errors
 - Usage:
   - fix-diff-counts.sh < patch.diff > patch.fixed.diff
   - fix-diff-counts.sh patch.diff > patch.fixed.diff
@@ -62,8 +63,3 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
 - Runnable shell commands must be in fenced code blocks. Avoid heredocs outside code fences (zsh can mis-handle pasted lines).
 - Important for Assistant: Any formatted text must always be placed in fenced code blocks.  Yaml, bash, scripts or code of any kind. Poetry. Anything where lines should not be run altogether.
 
-- For platforms without pbcopy/pbpaste:
-  - macOS: pbcopy/pbpaste (default)
-  - Linux: xclip or xsel
-  - Windows: clip.exe (paste via powershell Get-Clipboard)
-  - The assistant can adapt these scripts to your platform on request.

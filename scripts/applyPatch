@@ -1,132 +1,56 @@
 #!/usr/bin/env bash
-# applyPatch — fix hunk counts, then git apply (clipboard-first).
+# applyPatch — minimal: fix hunk counts, check, apply.
 # Usage:
-#   scripts/applyPatch                 # reads diff from clipboard (pbpaste)
-#   pbpaste | scripts/applyPatch       # reads diff from stdin
-#   scripts/applyPatch patch.diff      # reads diff from file
-#   scripts/applyPatch --from-clipboard
-# Options (clipboard convenience):
-#   --copy-diff        Copy git diff of affected paths to clipboard after apply (default)
-#   --no-copy-diff     Do not copy diff after apply
-# Env:
-#   APPLY_PATCH_COPY=0|1  Override default copying behavior
+#   scripts/applyPatch             # read diff from clipboard (fromClip)
+#   scripts/applyPatch -           # read diff from stdin
+#   scripts/applyPatch patch.diff  # read diff from file
 
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 tmp_in="$(mktemp -t applyPatch.in.XXXXXX)"
 tmp_fixed="$(mktemp -t applyPatch.fixed.XXXXXX)"
 cleanup() { rm -f "$tmp_in" "$tmp_fixed"; }
 trap cleanup EXIT
 
-read_from_stdin=false
-read_from_file=""
-read_from_clipboard=false
-# Default: copy diff after apply unless explicitly disabled
-copy_diff="${APPLY_PATCH_COPY:-1}"
-
-# Parse args
-if [[ $# -gt 0 ]]; then
-  case "${1:-}" in
-    --from-clipboard)
-      read_from_clipboard=true
-      ;;
-    --copy-diff)
-      copy_diff=1
-      ;;
-    --no-copy-diff)
-      copy_diff=0
-      ;;
-    -*)
-      echo "Unknown option: $1" >&2
-      echo "Usage: scripts/applyPatch [--from-clipboard] [--copy-diff|--no-copy-diff] | pbpaste | scripts/applyPatch | scripts/applyPatch patch.diff" >&2
-      exit 2
-      ;;
-    *)
-      read_from_file="$1"
-      ;;
-  esac
-fi
-
-# Decide input source
-if [ ! -t 0 ] && [[ -z "$read_from_file" && "$read_from_clipboard" = false ]]; then
-  read_from_stdin=true
-elif [[ -n "$read_from_file" ]]; then
-  :
-else
-  # default to clipboard when no stdin and no file
-  read_from_clipboard=true
-fi
-
-# Load input
-if [[ "$read_from_stdin" = true ]]; then
+# Input source
+src="${1:-__CLIP__}"
+if [[ "$src" == "-" ]]; then
   cat > "$tmp_in"
-elif [[ -n "$read_from_file" ]]; then
-  if [[ ! -f "$read_from_file" ]]; then
-    echo "File not found: $read_from_file" >&2
-    exit 1
-  fi
-  cp "$read_from_file" "$tmp_in"
-elif [[ "$read_from_clipboard" = true ]]; then
-  if ! command -v pbpaste >/dev/null 2>&1; then
-    echo "pbpaste not found. Provide a file or pipe stdin." >&2
-    exit 1
-  fi
-  pbpaste > "$tmp_in"
-  if [[ ! -s "$tmp_in" ]]; then
-    echo "Clipboard is empty or not a diff. Copy a unified diff to the clipboard and retry." >&2
-    exit 1
-  fi
+elif [[ "$src" != "__CLIP__" ]]; then
+  [[ -f "$src" ]] || { echo "File not found: $src" >&2; exit 1; }
+  cp "$src" "$tmp_in"
 else
-  echo "No input detected. Use stdin, a file, or --from-clipboard." >&2
-  exit 1
+  command -v fromClip >/dev/null 2>&1 || { echo "fromClip not found on PATH. Provide a file or use '-' for stdin." >&2; exit 1; }
+  fromClip > "$tmp_in"
 fi
+[[ -s "$tmp_in" ]] || { echo "No input diff provided." >&2; exit 1; }
 
-# Resolve fixer: use awk implementation; search PATH, then scripts/
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-fix_awk=""
+# Fixer (awk script)
+fixer=""
 if command -v fix-diff-counts.sh >/dev/null 2>&1; then
-  fix_awk="$(command -v fix-diff-counts.sh)"
+  fixer="$(command -v fix-diff-counts.sh)"
 elif [[ -x "$script_dir/fix-diff-counts.sh" ]]; then
-  fix_awk="$script_dir/fix-diff-counts.sh"
-fi
-
-if [[ -n "$fix_awk" ]]; then
-  "$fix_awk" "$tmp_in" > "$tmp_fixed"
+  fixer="$script_dir/fix-diff-counts.sh"
 else
-  echo "No diff count fixer found (need fix-diff-counts.sh in PATH or scripts/)." >&2
+  echo "fix-diff-counts.sh not found (PATH or scripts/)" >&2
   exit 1
 fi
 
-# Verify and apply
-git apply --check -v "$tmp_fixed"
-git apply "$tmp_fixed"
-echo "Applied patch."
-
-# If requested, copy a focused diff of affected paths to clipboard
-if [[ "$copy_diff" == "1" ]]; then
-  # Extract changed paths from the fixed patch:
-  # additions/changes via +++ b/..., deletions via --- a/... (since +++ may be /dev/null)
-  mapfile -t add_or_change < <(grep -E '^\+\+\+ b/' "$tmp_fixed" | sed -E 's@^\+\+\+ b/@@' | grep -v '^/dev/null' || true)
-  mapfile -t deletions_a  < <(grep -E '^--- a/' "$tmp_fixed" | sed -E 's@^--- a/@@' | grep -v '^/dev/null' || true)
-
-  declare -A seen_paths=()
-  declare -a paths=()
-  for p in "${add_or_change[@]}"; do
-    [[ -n "$p" && -z "${seen_paths[$p]:-}" ]] && { paths+=("$p"); seen_paths["$p"]=1; }
-  done
-  for p in "${deletions_a[@]}"; do
-    [[ -n "$p" && -z "${seen_paths[$p]:-}" ]] && { paths+=("$p"); seen_paths["$p"]=1; }
-  done
-
-  if [[ ${#paths[@]} -gt 0 ]]; then
-    if command -v pbcopy >/dev/null 2>&1; then
-      git diff -- "${paths[@]}" | pbcopy
-      echo "Copied git diff for ${#paths[@]} path(s) to clipboard:"
-      for p in "${paths[@]}"; do echo "  - $p"; done
-    else
-      echo "Note: pbcopy not found; skipped --copy-diff clipboard step."
-    fi
-  else
-    echo "No paths detected in patch headers; skipped --copy-diff."
-  fi
+# Route output to terminal and clipboard
+if command -v toClip >/dev/null 2>&1; then
+  exec > >(tee /dev/tty | toClip) 2>&1
+else
+  exec > >(tee /dev/tty) 2>&1
 fi
+
+echo "applyPatch: fixing hunk counts…"
+"$fixer" "$tmp_in" > "$tmp_fixed"
+
+echo "applyPatch: git apply --check …"
+git apply --check -v "$tmp_fixed"
+echo "applyPatch: check OK."
+
+echo "applyPatch: applying…"
+git apply "$tmp_fixed"
+echo "applyPatch: done."

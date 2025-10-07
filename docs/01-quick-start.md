@@ -41,7 +41,7 @@ The loop
    - nl -ba adds visible line numbers (including blanks) without changing bytes.
    - sed -n 'START,ENDp' prints only that range.
    - Both are read-only and safe.
-   - pbcopy copies standard input to the clipboard (on macs)
+   - toClip copies standard input to the clipboard
    - Typical bundle requested by the assistant:
 ```bash
 {
@@ -53,7 +53,7 @@ The loop
   echo
   echo "=== Tests/WidgetTests.swift (1–200) ==="
   nl -ba Tests/WidgetTests.swift | sed -n '1,200p'
-} | pbcopy
+} | toClip
 ```
 3) Assistant prepares and returns a fenced code block with its patch.
 4) Copy the returned patch, and Apply it directly from clipboard (applyPatch does pbpaste internally):
@@ -109,7 +109,4 @@ Patch expectations
   - Lines start with space (context), - (deletion), + (addition)
   - LF endings; final newline
 - New files: --- /dev/null and +++ b/path with @@ -0,0 +N,N @@
-
-Non‑macOS
-- Replace pbcopy/pbpaste with your platform’s clipboard tool; the assistant can adapt the scripts.
 

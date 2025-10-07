@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Share repo files to clipboard as fenced blocks with metadata.
 # Usage: scripts/sharefiles
+# Requires: toClip on PATH (clipboard writer)
 #
 # Guardrails:
 # - Skips binary files (heuristic via git grep -I).
@@ -77,6 +78,6 @@ done < <(git ls-files -z)
     cat "$f"
     echo '```'
   done
-} | pbcopy
+} | toClip
 
 echo "Files copied to clipboard (text only, <= ${MAX_KB}KB)"

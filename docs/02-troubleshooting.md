@@ -45,7 +45,6 @@ Line endings and final newline
 - Fix: applyPatch ensures a final newline; if a tool converts CRLF->LF or vice‑versa, re‑peek to re‑sync before next patch.
 
 Clipboard issues (non‑macOS)
-- Replace pbcopy/pbpaste with an equivalent for your platform (e.g., xclip/xsel on Linux, clip.exe on Windows).
 - The assistant can provide adapted scripts on request.
 
 Out‑of‑band local edits

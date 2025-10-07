@@ -8,6 +8,6 @@ SCHEME="${SCHEME:-YourScheme}"
 DEST="${DEST:-platform=iOS Simulator,name=iPhone SE (3rd generation),arch=arm64}"
 CMD="${1:-build}"
 shift || true
-xcodebuild -scheme "$SCHEME" -destination "$DEST" "$CMD" "$@" 2>&1 | head -n 200 | pbcopy
+xcodebuild -scheme "$SCHEME" -destination "$DEST" "$CMD" "$@" 2>&1 | head -n 200 | toClip
 echo "xcb.sh: copied $CMD output to clipboard"
 
