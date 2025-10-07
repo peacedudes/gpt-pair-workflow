@@ -1,42 +1,82 @@
 #!/usr/bin/env bash
 # Share repo files to clipboard as fenced blocks with metadata.
 # Usage: scripts/sharefiles
+#
+# Guardrails:
+# - Skips binary files (heuristic via git grep -I).
+# - Skips files larger than SHAREFILES_MAX_KB (default 256 KB). Override:
+#     SHAREFILES_MAX_KB=1024 scripts/sharefiles
 
 set -euo pipefail
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
-{
-# Print repository metadata to help the assistant orient diffs/patches.
-echo "=== Repo meta ==="
-git rev-parse --show-toplevel 2>/dev/null || true
-echo "HEAD: $(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')"
-echo "DESC: $(git describe --tags --always 2>/dev/null || echo 'n/a')"
-echo "Status:"
-git status --porcelain=v1 2>/dev/null || true
-echo "Files:"
-git ls-files
-echo "================="
 
-# Emit all tracked files with fenced code blocks and basic language tagging.
-while IFS= read -r f; do
-  echo "$f"
-  case "$f" in
-    *.swift) lang="swift" ;;
-    *.yml|*.yaml) lang="yaml" ;;
-    *.md) lang="md" ;;
-    *.json) lang="json" ;;
-    *.sh) lang="bash" ;;
-    *.plist) lang="xml" ;;
-    *) lang="" ;;
-  esac
-  if [[ -n "$lang" ]]; then
-    echo '```'"$lang"
-  else
-    echo '```'
+MAX_KB=${SHAREFILES_MAX_KB:-256}
+MAX_BYTES=$(( MAX_KB * 1024 ))
+
+# Build eligible file list: tracked, text-like, size <= limit
+eligible_files=()
+while IFS= read -r -d '' f; do
+  [[ -e "$f" ]] || continue
+  sz=$(wc -c < "$f" 2>/dev/null || echo 0)
+  case "$sz" in (*[!0-9]*|"") sz=0 ;; esac
+  (( sz <= MAX_BYTES )) || continue
+  # Consider text if empty or git grep -I reports it as non-binary
+  if [[ ! -s "$f" ]] || git grep -I -l -e . -- "$f" >/dev/null 2>&1; then
+    eligible_files+=("$f")
   fi
-  cat "$f"
-  echo '```'
-done < <(git ls-files)
-} | pbcopy
-echo "Files copied to clipboard"
+done < <(git ls-files -z)
 
+{
+  # Repo metadata to help the assistant orient diffs/patches.
+  echo "=== Repo meta ==="
+  git rev-parse --show-toplevel 2>/dev/null || true
+  echo "HEAD: $(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')"
+  echo "DESC: $(git describe --tags --always 2>/dev/null || echo 'n/a')"
+  echo "Status:"
+  git status --porcelain=v1 2>/dev/null || true
+  echo "Files (text, <= ${MAX_KB}KB):"
+  printf "%s\n" "${eligible_files[@]}"
+  echo "================="
+
+  # Emit eligible files with fenced code blocks and basic language tagging.
+  for f in "${eligible_files[@]}"; do
+    echo "$f"
+    case "$f" in
+      *.swift) lang="swift" ;;
+      *.yml|*.yaml) lang="yaml" ;;
+      *.md) lang="md" ;;
+      *.json) lang="json" ;;
+      *.sh) lang="bash" ;;
+      *.plist|*.xml|*.xml) lang="xml" ;;
+      *.html) lang="html" ;;
+      *.css) lang="css" ;;
+      *.ts) lang="ts" ;;
+      *.tsx) lang="tsx" ;;
+      *.js) lang="javascript" ;;
+      *.jsx) lang="jsx" ;;
+      *.py) lang="python" ;;
+      *.rb) lang="ruby" ;;
+      *.go) lang="go" ;;
+      *.rs) lang="rust" ;;
+      *.java) lang="java" ;;
+      *.kt) lang="kotlin" ;;
+      *.c) lang="c" ;;
+      *.h) lang="c" ;;
+      *.cpp|*.cc|*.cxx) lang="cpp" ;;
+      *.hpp|*.hh|*.hxx) lang="cpp" ;;
+      *.toml) lang="toml" ;;
+      *.ini) lang="ini" ;;
+      *) lang="" ;;
+    esac
+    if [[ -n "${lang:-}" ]]; then
+      echo '```'"$lang"
+    else
+      echo '```'
+    fi
+    cat "$f"
+    echo '```'
+  done
+} | pbcopy
+
+echo "Files copied to clipboard (text only, <= ${MAX_KB}KB)"
