@@ -12,8 +12,16 @@ Tools (scripts/)
 - Put these in your $PATH, copy them to your $HOME/bin, or otherwise make them accessible.
   - sharefiles — copies repo list and all (text) tracked files to clipboard as fenced code blocks. Paste once per session.
   - applyPatch — reads a diff from clipboard (or file), auto‑fixes hunk counts, ensures final newline, then git apply.
-  - fix-diff-counts.sh — recomputes @@ hunk lengths from the body of the changes made. 
+  - fix-diff-counts.sh — recomputes @@ hunk lengths from the body of the changes made.
   - xcb.sh — sample build/test with short logs copied to clipboard (stderr+stdout). Create your own by asking GPT to make something to test your project and copy the results it wants to see to the clipboard.
+  - Clipboard adapters for macOS, Linux, and Windows are built in via toClip/fromClip.
+
+Assistant’s first reply (template)
+- In the repo you want to work on, run this and paste the clipboard output here:
+```bash
+sharefiles
+```
+- After I see the snapshot, I’ll propose one tiny, low‑risk first change, request a minimal peek of the exact lines I’ll touch, and return a unified diff you can apply with applyPatch.
 
 Contract (safety + cadence)
 - One action per step; everything clipboard‑driven.
@@ -41,7 +49,7 @@ The loop
    - nl -ba adds visible line numbers (including blanks) without changing bytes.
    - sed -n 'START,ENDp' prints only that range.
    - Both are read-only and safe.
-   - toClip copies standard input to the clipboard
+   - toClip copies standard input to the clipboard.
    - Typical bundle requested by the assistant:
 ```bash
 {
@@ -56,6 +64,7 @@ The loop
 } | toClip
 ```
 3) Assistant prepares and returns a fenced code block with its patch.
+   - Multi-file patches are OK only if we just peeked all touched files in one request. Otherwise, send a single-file patch and iterate.
 4) Copy the returned patch, and apply it directly from the clipboard (applyPatch reads from the clipboard by default):
 ```bash
 applyPatch
@@ -64,7 +73,7 @@ applyPatch
 - As early as step two, errors can occur. When they do, just paste the error to the assistant and the loop restarts.
 - Just getting to the point where there are no compile errors and testing can be done can be challenging.
 - GPT may not make patches without peeking first, because they usually fail. Refuse patches without a fresh peek first.
-- Ask assistant to create your own run script that's easy, limits output, and leaves results copied to clipboard.
+- Ask the assistant to create your own run script that's easy, limits output, and leaves results copied to clipboard.
 ```bash
 xcb.sh test
 ```

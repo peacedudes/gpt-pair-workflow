@@ -11,10 +11,12 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
   sharefiles # run from repo's root
 - Output includes:
   - Repo meta: root path, HEAD, describe, status, tracked file list.
-  - Each tracked file as a fenced block with language tag when obvious.
+  - Each tracked file as a fenced block (no language tag).
 - Notes:
   - Uses git ls-files; ordering is path-sorted.
   - Clipboard: requires toClip/fromClip on PATH (see Clipboard adapters below).
+  - Skips binary files (heuristic via git grep -I).
+  - Skips files larger than SHAREFILES_MAX_KB (default 256 KB). Override: SHAREFILES_MAX_KB=1024 sharefiles
 
 ### applyPatch
 - Purpose: Accepts a unified diff, auto-fixes hunk counts, then git apply.

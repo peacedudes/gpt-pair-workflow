@@ -2,6 +2,9 @@
 
 This workflow is resilient, but a few issues come up regularly. Here’s how to fix them fast.
 
+Stop on error
+- When anything fails (apply/build/test), stop. Re‑peek a small, numbered slice of the exact target, then retry with a rebased patch.
+
 Patch won’t apply (“patch does not apply” / “while searching for”)
 - Cause: the diff was based on older bytes than your working copy (drift), or whitespace/formatting altered lines.
 - Fix:
@@ -39,6 +42,13 @@ Deleting a file via diff
   - Body: all lines removed
 - Equivalent CLI:
   - git rm -- path/to/file
+
+Creating a file via diff
+- Unified diff representation:
+  - Header: --- /dev/null and +++ b/path/to/file
+  - Hunk: @@ -0,0 +N,N @@ followed by the full file body
+- Equivalent CLI:
+  - Ensure parent directory exists (mkdir -p ...), write the file, then git add path/to/file
 
 Line endings and final newline
 - Requirement: LF endings and a final trailing newline.

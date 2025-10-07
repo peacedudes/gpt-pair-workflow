@@ -40,41 +40,10 @@ done < <(git ls-files -z)
   printf "%s\n" "${eligible_files[@]}"
   echo "================="
 
-  # Emit eligible files with fenced code blocks and basic language tagging.
+  # Emit eligible files with fenced code blocks.
   for f in "${eligible_files[@]}"; do
     echo "$f"
-    case "$f" in
-      *.swift) lang="swift" ;;
-      *.yml|*.yaml) lang="yaml" ;;
-      *.md) lang="md" ;;
-      *.json) lang="json" ;;
-      *.sh) lang="bash" ;;
-      *.plist|*.xml|*.xml) lang="xml" ;;
-      *.html) lang="html" ;;
-      *.css) lang="css" ;;
-      *.ts) lang="ts" ;;
-      *.tsx) lang="tsx" ;;
-      *.js) lang="javascript" ;;
-      *.jsx) lang="jsx" ;;
-      *.py) lang="python" ;;
-      *.rb) lang="ruby" ;;
-      *.go) lang="go" ;;
-      *.rs) lang="rust" ;;
-      *.java) lang="java" ;;
-      *.kt) lang="kotlin" ;;
-      *.c) lang="c" ;;
-      *.h) lang="c" ;;
-      *.cpp|*.cc|*.cxx) lang="cpp" ;;
-      *.hpp|*.hh|*.hxx) lang="cpp" ;;
-      *.toml) lang="toml" ;;
-      *.ini) lang="ini" ;;
-      *) lang="" ;;
-    esac
-    if [[ -n "${lang:-}" ]]; then
-      echo '```'"$lang"
-    else
-      echo '```'
-    fi
+    echo '```'
     cat "$f"
     echo '```'
   done
