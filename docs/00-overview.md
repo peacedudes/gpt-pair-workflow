@@ -19,9 +19,10 @@ Cadence (at a glance)
 2) Decide on a concrete goal (e.g., “tighten README,” “add a script option”).
 3) Iterate:
    - Assistant requests small, read‑only peeks (nl + sed).
-   - Assistant returns a unified diff.
+   - Operator executes peek and copies result to Assistant.
+   - Assistant returns a unified diff (patch).
    - Operator applies the patch and, if relevant, runs build/test.
-4) Repeat until the goal is complete.
+4) Repeat until any errors are resolved and the goal is reached.
 
 Safety and scope
 - One action per step; everything clipboard-driven.
@@ -30,11 +31,11 @@ Safety and scope
 Seatbelt — peek before patch
 - Assistant: always request a numbered peek of the exact file/range before drafting a patch for it.
 - Operator: if a patch arrives without a preceding peek, refuse it and ask for a re-peek of the target slice.
-- Benefit: anchored diffs apply cleanly and avoid UI/formatting drift.
+- Benefit: anchored diffs apply cleanly; peeking first greatly increases the chances of patchess succeeding.
 
 
 Privacy
-- Contents pasted into chat are visible to the model/platform. Do NOT paste private code unless permission is obtained.
+- Contents pasted into chat are visible to the model/platform. Do NOT paste private code or intellectual property unless permission is obtained.
 
 What this is not
 - Not a replacement for code review or CI.
