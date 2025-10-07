@@ -5,13 +5,14 @@ Purpose
 - Keep turns short and anchored so diffs apply cleanly and progress is steady.
 
 Who does what
-- Operator: runs simple, read-only peeks, applies returned patches, and decides the next goal.
+- Operator: shares repo files, decides the next goal, runs simple read-only peeks, applies patches, and repeats until goal is reached.
+
 - Assistant: requests targeted peeks, drafts unified diffs, and adapts based on results.
 
 Why this works
-- GPT can’t clone/push and uploads don’t persist across turns; a pasted repo snapshot does.
+- GPT can’t clone/push to repos, and zip file uploads don’t persist across turns; a pasted text snapshot does.
 - Short, anchored turns reduce drift and keep chat responsive.
-- Hunk-length counts are auto-corrected on apply, so minor patch formatting errors don’t block progress.
+- GPT stumbles slightly creating patch files, so trivial hunk count errors are auto-corrected before applying patches.
 
 Cadence (at a glance)
 1) Share a repo snapshot once to establish context.
@@ -33,12 +34,13 @@ Seatbelt — peek before patch
 
 
 Privacy
-- Contents pasted into chat are visible to the model/platform. Avoid private code unless permission is granted.
+- Contents pasted into chat are visible to the model/platform. Do NOT paste private code unless permission is obtained.
 
 What this is not
 - Not a replacement for code review or CI.
 - Not tied to any language or framework.
 
 Next
-- Proceed to docs/01-quick-start.md for the scripts and the step-by-step loop.
+- Proceed to docs/01-quick-start.md for the step-by-step loop.
 - See docs/03-scripts.md for a concise reference to the helper scripts.
+
