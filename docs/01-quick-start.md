@@ -78,13 +78,14 @@ Commit changes to preserve work in progress.
 
 When chat lags: handoff to a fresh instance
 - If latency or confusion grows, start a new chat session.
-- From the project repo, run sharefiles again and paste the snapshot.
-- Paste a brief handoff summary:
+- From this repo, run sharefiles and paste the snapshot.
+- From the project repo, run sharefiles and paste the snapshot.
+- Ask assistant to create a brief handoff summary for its successor:
   - Current goal and scope.
   - What’s done vs. outstanding.
   - The latest errors/test failures or build status.
-  - The exact next step you want.
-- Include minimal peeks for the files likely to be patched next.
+  - The exact next step you want, if known.
+- Paste the handoff summary, and give any other directions you may want.
 - Resume the loop: Peek → Patch → Apply → Test.
 
 Why auto‑fix counts?
