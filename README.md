@@ -5,7 +5,7 @@
 Clipboard-first workflow for collaborating with GPT on real codebases.
 
 Requirements
-- git, bash; macOS or Linux or Windows terminal. Reasonable literacy.
+- git, bash; macOS, Linux, or Windows terminal. Basic command-line literacy.
 - Clipboard access is assumed (toClip/fromClip are provided).
 
 How it works (at a glance)
@@ -19,13 +19,12 @@ Running commands safely
 - In this workflow, the assistant prepares commands that you will paste directly into a terminal and run.  
 - Read commands first; if anything looks unclear or risky, don’t run it.
 - Commands are short and explain their purpose upfront.
-- No remote code execution, nothing runs without your consent.
+- No remote code execution; nothing runs without your consent.
 - You review diffs and apply them locally (applyPatch); nothing runs automatically.
 
 What this is
 - A recipe for successful GPT-assisted development using a git repo.
 - Works with any plain text git repo and the system clipboard.
-- Some command line skills and the ability to run scripts are required.
 
 Problems it solves
 - GPT can’t clone or push; zip file uploads don’t persist. A pasted repo snapshot does.

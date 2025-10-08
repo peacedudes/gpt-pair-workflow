@@ -44,7 +44,7 @@ Share Your Project repo (usually once per session)
 The loop
 1) Assistant requests peek of places it will be patching. Peeks are directly executable shell command blocks.
 - Unfortunately assistants sometimes skip this step and go right to creating the patch. That patch will probably fail.
-- It's better to reject patches without a peek first, and creade a cadence which usually works with fewer stumbles.
+- It's better to reject patches without a peek first, and create a cadence which usually works with fewer stumbles.
 - It's fun and goes quickly when this works well.
 2) Paste peek request into shell, review for sanity/safety, then hit Return to load the clipboard. Paste directly to assistant verbatim.
 - What peeks do:
@@ -74,8 +74,8 @@ applyPatch
 5) Build/test and send short logs:
 - As early as step two, errors can occur. When they do, just paste the error to the assistant and the loop restarts.
 - Just getting to the point where there are no compile errors and testing can be done can be challenging.
-- Allowing assistant to attempt patches without peeking first ends up feeling frustrating and wasteful.
-- Ask the assistant to create your own run/test script that's easy, limits output, and leaves results copied to clipboard.
+- Allowing the assistant to attempt patches without peeking first ends up feeling frustrating and wasteful.
+- Ask the assistant to create your own run or test script that's easy, limits output, and leaves results copied to clipboard.
 ```bash
 xcb.sh test
 ```
