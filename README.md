@@ -4,6 +4,24 @@
 
 Clipboard-first workflow for collaborating with GPT on real codebases.
 
+Requirements
+- git, bash; macOS or Linux or Windows terminal. Reasonable literacy.
+- Clipboard access is assumed (toClip/fromClip are provided).
+
+How it works (at a glance)
+- Run "sharefiles" in this repo and paste clipboard to the assistant to share workflow mechanics.
+- Move to the local repo you'll be working with, run sharefiles and paste its snapshot to the assistant.
+- Set a concrete goal or change to make.
+- Iterate: the assistant requests targeted read-only “peeks” to specific code it will change, then creates a unified diff (patch); the operator applies it and runs checks.
+- Repeat until the goal is complete.
+
+Running commands safely
+- In this workflow, the assistant prepares commands that you will paste directly into a terminal and run.  
+- Read commands first; if anything looks unclear or risky, don’t run it.
+- Commands are short and explain their purpose upfront.
+- No remote code execution, nothing runs without your consent.
+- You review diffs and apply them locally (applyPatch); nothing runs automatically.
+
 What this is
 - A recipe for successful GPT-assisted development using a git repo.
 - Works with any plain text git repo and the system clipboard.
@@ -13,13 +31,6 @@ Problems it solves
 - GPT can’t clone or push; zip file uploads don’t persist. A pasted repo snapshot does.
 - Long chats develop long lag and can become unstable. Efficiently moving to a fresh AI instance is mandatory.
 - GPT often makes patch files that fail with line counts off by one. Easily auto-corrected.
-
-How it works (at a glance)
-- Run sharefiles in this repo and paste clipboard to the assistant to share workflow mechanics.
-- Move to the local repo you'll be working with, run sharefiles and paste its snapshot to the assistant.
-- Agree on a concrete goal or change.
-- Iterate: the assistant requests targeted read-only “peeks” to specific code it will change, creates a unified diff (patch); the operator applies it and runs checks.
-- Repeat until the goal is complete.
 
 What this is not
 - Not for private or unshareable code.
@@ -36,6 +47,7 @@ What this is not
 
 Learn more
 - Start with docs/00-overview.md (concepts, privacy, cadence), then docs/01-quick-start.md (scripts and step-by-step).
+- See docs/02-troubleshooting.md for common issues and fixes.
 - See docs/03-scripts.md for a quick reference to the helper scripts.
 
 ## License

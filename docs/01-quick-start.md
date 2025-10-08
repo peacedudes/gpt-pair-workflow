@@ -3,10 +3,10 @@
 Why this
 - GPT can’t clone/push to your repo, and forgets contents of a zip archive quickly. A plain‑text repo dump can persist.
 - We keep a tight loop: Share repo, then Peek → Patch → Apply → Test → Repeat.
-- Chat UIs slow down as context grows. Starting a fresh instance and getting back to speed quickly is critical.
+- Chat UIs slow down as context grows. Starting a fresh instance and getting back to speed quickly is essential.
 
 Privacy Warning
-- Don’t share private or unshareable repos without permission. Repeat that out loud and pause.  This workflow works by pasting the contents of all text files in a repo into GPT or similar chat.  That may not be ok for your situation, especially professional. Think before using.
+- Don’t share private or unshareable repos without permission. Repeat that out loud and pause.  This workflow works by pasting the contents of all text files in a repo into GPT or similar chat.  That may not be ok for your situation, especially in a professional setting. Think before using. Don't neglect to think about embedded credentials or other secrets.
 
 Tools (scripts/)
 - Put these in your $PATH, copy them to your $HOME/bin, or otherwise make them accessible.
@@ -23,22 +23,29 @@ Contract (safety + cadence)
 - The assistant batches multiple peeks into one block so the human runs one command per step.
 
 Share This repo (once per session)
-- From this repo run this, then paste the clipboard into a fresh GPT session to let it know what we're doing.
+- From this repo run "sharefiles" and paste the clipboard into a fresh GPT session to get it up to speed quickly.
 ```bash
 scripts/sharefiles
 ```
 Assistant’s first reply (template)
-- In the repo you want to work on, run this and paste the clipboard output here:
+- From the repo you want to work on, run this and paste the clipboard output here to share all the files at once:
 ```bash
 sharefiles
 ```
 - After I see the snapshot, I’ll propose one tiny, low‑risk first change, request a minimal peek of the exact lines I’ll touch, and return a unified diff you can apply with applyPatch.
 
-Share Your Project repo (usually once per session), and choose something the assistant will work on first.
-- Collaborate as makes sense. Partnership works well.
+Share Your Project repo (usually once per session)
+- Right before pasting your repo snapshot is a good time to confirm a test patch, or share handoff instructions, or a goal.
+- Once you've shared your files, you're ready to begin.
+- Collaborate as makes sense. Partnership or pair programming techniques work well.
+- Expect assistant to make errors and generate compile/test errors just like any other partner might.
+- Scripts are designed to copy errors/results to clipboard, ready to paste into assistant to repair/retry.
 
 The loop
 1) Assistant requests peek of places it will be patching. Peeks are directly executable shell command blocks.
+- Unfortunately assistants sometimes skip this step and go right to creating the patch. That patch will probably fail.
+- It's better to reject patches without a peek first, and creade a cadence which usually works with fewer stumbles.
+- It's fun and goes quickly when this works well.
 2) Paste peek request into shell, review for sanity/safety, then hit Return to load the clipboard. Paste directly to assistant verbatim.
 - What peeks do:
    - nl -ba adds visible line numbers (including blanks) without changing bytes.
@@ -67,14 +74,14 @@ applyPatch
 5) Build/test and send short logs:
 - As early as step two, errors can occur. When they do, just paste the error to the assistant and the loop restarts.
 - Just getting to the point where there are no compile errors and testing can be done can be challenging.
-- GPT may not make patches without peeking first, because they usually fail. Refuse patches without a fresh peek first.
-- Ask the assistant to create your own run script that's easy, limits output, and leaves results copied to clipboard.
+- Allowing assistant to attempt patches without peeking first ends up feeling frustrating and wasteful.
+- Ask the assistant to create your own run/test script that's easy, limits output, and leaves results copied to clipboard.
 ```bash
 xcb.sh test
 ```
 6) Repeat until goal has been reached. After any patch lands, the assistant re‑peeks before drafting the next one.
-
-Commit changes to preserve work in progress.
+7) Commit changes to preserve progress as appropriate. Assistant can help, making this a copy/paste hit Return operation.
+8) Choose something to fix next.
 
 When chat lags: handoff to a fresh instance
 - If latency or confusion grows, start a new chat session.
@@ -90,6 +97,7 @@ When chat lags: handoff to a fresh instance
 
 Why auto‑fix counts?
 - Models often miscount @@ lengths (oldLen/newLen). We always repair them, so small count errors don’t derail progress.
+- We tried and failed to get GPT to calculate them correctly, so chose to just let the auto-correct fix it.
 
 Unified diff in brief (what Assistant will create and paste back)
 - One block that ends with a newline. For each file:
