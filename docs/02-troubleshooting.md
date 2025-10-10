@@ -1,39 +1,39 @@
-# Troubleshooting — common bumps and quick fixes
+# Troubleshooting -- common bumps and quick fixes
 
-This workflow is resilient, but a few issues come up regularly. Here’s how to fix them fast.
+This workflow is resilient, but a few issues come up regularly. Here's how to fix them fast.
 
 Stop on error
-- When anything fails (apply/build/test), stop. Re‑peek a small, numbered slice of the exact target, then retry with a rebased patch.
+- When anything fails (apply/build/test), stop. Re-peek a small, numbered slice of the exact target, then retry with a rebased patch.
 
-Patch won’t apply (“patch does not apply” / “while searching for”)
+Patch won't apply ("patch does not apply" / "while searching for")
 - Cause: the diff was based on older bytes than your working copy (drift), or whitespace/formatting altered lines.
 - Fix:
-  1) Re‑peek the exact file/range the hunk targets (the assistant will ask for a narrow slice).
+  1) Re-peek the exact file/range the hunk targets (the assistant will ask for a narrow slice).
   2) The assistant rebases and sends a fresh diff.
   3) Apply again.
 
-“corrupt patch at line N”
+"corrupt patch at line N"
 - Cause: malformed diff (missing fences, missing final newline, or mangled @@ headers).
 - Fix:
   - Ensure you pasted a single fenced code block with unified diff only, ending in a newline.
-  - Re‑request the patch; applyPatch auto‑fixes hunk counts but can’t fix a broken structure.
+  - Re-request the patch; applyPatch auto-fixes hunk counts but can't fix a broken structure.
 
 Hunk length/count mismatches
-- Symptom: applyPatch logs “fixDiffCounts: corrected hunk …”.
+- Symptom: applyPatch logs "fixDiffCounts: corrected hunk ...".
 - Explanation: Expected and normal. Counts are recomputed automatically from the body.
-- Action: None, unless patch still fails; then re‑peek and retry as above.
+- Action: None, unless patch still fails; then re-peek and retry as above.
 
-Triple‑backtick blocks inside patches (nested fences)
+Triple-backtick blocks inside patches (nested fences)
 - Symptom: Chat UI or clipboard mangles a patch that contains fenced code blocks (like ```bash).
 - Fix options:
   - The assistant uses only unified diff fences for patches; internal example fences are allowed and should be preserved.
-  - If your UI still mangles them, ask for a “full‑file replacement” instead of a diff for that file, or request a here‑doc shell command to write the file bytes locally and then git diff it yourself.
+  - If your UI still mangles them, ask for a "full-file replacement" instead of a diff for that file, or request a here-doc shell command to write the file bytes locally and then git diff it yourself.
 
-Full‑file replacement instead of diff
+Full-file replacement instead of diff
 - When to use: the target file is small and formatting keeps breaking the diff in chat.
 - How:
   1) The assistant provides the entire file contents in a single fenced block (no diff).
-  2) You overwrite the file locally (here‑doc or editor).
+  2) You overwrite the file locally (here-doc or editor).
   3) Run git diff -- path/to/file to confirm the change and proceed.
 
 Deleting a file via diff is NOT recommended. It's blabbly and often fails.
@@ -52,32 +52,32 @@ Creating a file via diff
 
 Line endings and final newline
 - Requirement: LF endings and a final trailing newline.
-- Fix: applyPatch ensures a final newline; if a tool converts CRLF->LF or vice‑versa, re‑peek to re‑sync before next patch.
+- Fix: applyPatch ensures a final newline; if a tool converts CRLF->LF or vice-versa, re-peek to re-sync before next patch.
 
-Clipboard issues (non‑macOS)
+Clipboard issues (non-macOS)
 - Only macOS has been tested. Linux/Windows should work, and the assistant can provide adapted scripts as needed.
 
-Out‑of‑band local edits
-- If you change files locally between peeks, the assistant’s next diff may not match.
-- Fix: say what changed or re‑share a fresh peek of the affected ranges; the assistant will rebase the patch.
+Out-of-band local edits
+- If you change files locally between peeks, the assistant's next diff may not match.
+- Fix: say what changed or re-share a fresh peek of the affected ranges; the assistant will rebase the patch.
 
-“I only do one thing at a time”
-- That’s by design. The assistant batches requests so you run exactly one command per step (peek, apply, build/test).
+"I only do one thing at a time"
+- That's by design. The assistant batches requests so you run exactly one command per step (peek, apply, build/test).
 - If a step looks risky or unclear, say so; the assistant will simplify or explain. If the assistant asks for several separate peeks, remind them that this makes busywork for you and ask commands to always be grouped.
 
-When in doubt: re‑peek small
+When in doubt: re-peek small
 - The fastest way to unstick is to share a small, numbered slice of exactly what the hunk targets. The assistant will align on bytes and resend a minimal patch.  Adjust the patch size and re-peek if necessary to include the exact contents to be changed. Never guess even when you think you know.
 
 UI mangled my fenced blocks (patches with embedded ```bash, etc.)
 - Symptom: The chat UI or clipboard strips/rewraps inner fences, breaking a unified diff.
 - Quick fixes:
-  - Ask the assistant for a here‑doc command to write the file locally, for example:
-    - cat > path/to/file <<'EOF' … EOF
+  - Ask the assistant for a here-doc command to write the file locally, for example:
+    - cat > path/to/file <<'EOF' ... EOF
     - Then run: git diff -- path/to/file to review before committing.
-  - Ask for a full‑file replacement (not a diff), paste it into the file, and review with git diff yourself.
-  - If you must use a diff, request smaller, fence‑free diffs per file (avoid embedding example code fences inside the patch).
+  - Ask for a full-file replacement (not a diff), paste it into the file, and review with git diff yourself.
+  - If you must use a diff, request smaller, fence-free diffs per file (avoid embedding example code fences inside the patch).
 
 Avoid pasting sensitive or very large files
-- Don’t use this workflow on private code without permission. Don't share code with private keys or passwords.
+- Don't use this workflow on private code without permission. Don't share code with private keys or passwords.
 - If a file is too large or sensitive, skip sharing it and describe it instead, or share only the minimal numbered slices needed for the change.
 

@@ -1,4 +1,4 @@
-# Overview — Clipboard-first GPT collaboration
+# Overview -- Clipboard-first GPT collaboration
 
 Purpose
 - Enable reliable GPT-assisted changes in any git repo using plain text and the system clipboard.
@@ -10,7 +10,7 @@ Who does what
 - Assistant: requests targeted peeks, drafts unified diffs, and adapts based on results.
 
 Why this works
-- GPT can’t clone/push to repos, and zip file uploads don’t persist across turns; a pasted text snapshot does.
+- GPT can't clone/push to repos, and zip file uploads don't persist across turns; a pasted text snapshot does.
 - GPT can make complex git diff patches reliably, but only by pre-peeking targets of change just before baking.
 - The patch files can contain trivial hunk count errors, but they're easily auto-corrected before applying patches.
 - All scripts read from or write to the clipboard, enabling a paste-without-copy workflow.
@@ -20,7 +20,7 @@ Cadence (at a glance)
 2) Share the local working repo with assistant.
 3) Share any handoff message, and choose a goal for assistant to achieve.
 4) Iterate:
-   - Assistant requests small, read‑only peeks (nl + sed).
+   - Assistant requests small, read-only peeks (nl + sed).
    - Operator executes peek and copies result to Assistant.
    - Assistant returns a unified diff (patch).
    - Operator applies the patch from clipboard, and if successful, runs build or tests. Clipboard contains results ready for sharing to assistant.
