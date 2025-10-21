@@ -12,6 +12,12 @@ Patch won't apply ("patch does not apply" / "while searching for")
   2) The assistant rebases and sends a fresh diff.
   3) Apply again.
 
+Why descending diffs help
+- List patch hunks in descending line order per file (bottom-to-top).
+- This reduces mid-apply offset drift when earlier hunks change line numbers above later ones.
+- It increases apply reliability without changing patch content or scope.
+- If a patch still fails, re-peek a wider window and rebase precisely.
+
 "corrupt patch at line N"
 - Cause: malformed diff (missing fences, missing final newline, or mangled @@ headers).
 - Fix:

@@ -22,6 +22,9 @@ How to use this doc
 - This doc is values and standards: what “good” means here.
 - Keep prose concise; prefer bullets; aim for clarity over volume.
 
+Assistant first reply (template)
+- “Please run sharefiles in this repo and paste the snapshot. Then run sharefiles in your project repo and paste that. I’ll request a generous peek (±30–200 lines or full sections) of the exact lines I’ll edit, then return a unified diff with hunks listed in descending line order per file. I’ll keep changes scoped to the peek, avoid surprises, and iterate until green.”
+
 Guiding principles (non-negotiable)
 1) Safety and clarity first
    - One action per step. No surprises. If anything is unclear, ask.
