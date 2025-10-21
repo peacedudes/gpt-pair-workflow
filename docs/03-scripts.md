@@ -1,4 +1,4 @@
-# Scripts — quick reference
+# Scripts -- quick reference
 
 These helpers keep the loop fast and consistent. They are small, transparent, and safe by default.
 
@@ -6,7 +6,7 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
 - Purpose: Copy a snapshot of the repo (metadata + tracked files) to the clipboard as fenced blocks.
 - Typical use:
   - Initialize a new chat session (once), so the assistant sees the current repo contents.
-  - Re-run only if you need to refresh the assistant’s context from scratch.
+  - Re-run only if you need to refresh the assistant's context from scratch.
 - Usage:
   sharefiles # run from repo's root
 - Output includes:
@@ -31,6 +31,7 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
   - Streams stdout+stderr to terminal and copies the same output to the clipboard via toClip (tee).
   - If the chat UI mangles fenced blocks inside patches, ask the assistant for a here-doc command to write the file(s)
     locally, then review with: git diff -- path/to/file
+  - Reminder: List patch hunks in descending line order per file to reduce drift mid-apply.
 
 ## toClip and fromClip
 - Clipboard adapters. OS-agnostic shims to copy from/to clipboard.
@@ -55,7 +56,7 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
   - DEST sets the simulator destination.
 - Notes:
   - Optional and environment-specific. Most teams should create their own stack-specific helper that captures build/test output succinctly (e.g., a Gradle/Maven/NPM/Cargo wrapper).
-  - If you’re not on macOS/Xcode, treat this as a pattern to copy, not a requirement.
+  - If you're not on macOS/Xcode, treat this as a pattern to copy, not a requirement.
 
 ## General tips
 - One action per step: peek, apply, or run tests. If a step feels risky, ask for a smaller peek or a full-file replacement.
