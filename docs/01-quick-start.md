@@ -32,7 +32,25 @@ Assistant's first reply (template)
 ```bash
 sharefiles
 ```
-- After I see the snapshot, I'll propose one tiny, low-risk first change, request a minimal peek of the exact lines I'll touch, and return a unified diff you can apply with applyPatch.
+- After I see the snapshot, I'll propose one tiny, low-risk first change, request a generous peek of the exact lines I'll touch, and return a unified diff you can apply with applyPatch.
+
+Assistant first peek request (template)
+- One command, generous windows, batched into a single clipboard block.
+```bash
+{
+  echo "=== Sources/Feature/FileA.swift (1-200) ==="
+  nl -ba Sources/Feature/FileA.swift | sed -n '1,200p'
+  echo
+  echo "=== Sources/Feature/ModuleB.swift (120-280) ==="
+  nl -ba Sources/Feature/ModuleB.swift | sed -n '120,280p'
+  echo
+  echo "=== Tests/ModuleBTests.swift (1-180) ==="
+  nl -ba Tests/ModuleBTests.swift | sed -n '1,180p'
+} | toClip
+```
+- Adjust ranges to cover full functions/sections or ±100–200 lines when unsure.
+- Batch all needed peeks into one block so the operator runs a single command.
+- Never guess bytes—peek first; then patch with hunks in descending order per file.
 
 Share Your Project repo (usually once per session)
 - Right before pasting your repo snapshot is a good time to confirm a test patch, or share handoff instructions, or a goal.

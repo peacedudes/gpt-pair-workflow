@@ -10,6 +10,10 @@ Audience
 - Experienced contributors seeking clarity on expectations and best practices.
 
 Scope
+- See also:
+  - 01-quick-start.md for the loop and scripts
+  - 02-troubleshooting.md for fixes and examples
+- Keep mechanics in 01/02; this file captures values, style, and intent.
 - Workflow principles (clipboard-first, peek → patch → apply).
 - Coding philosophy (clarity, testability, accessibility, subtle animations).
 - Style guidelines (names, comments, doc quality).
