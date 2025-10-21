@@ -78,6 +78,19 @@ When in doubt: re-peek wider (with context)
   - For a medium edit or uncertain location: request the whole function/section or ±100–200 lines.
 - Never guess bytes. Re-peek, then rebase the patch precisely.
 
+Example re-peek bundle (one command, generous windows)
+
+    {
+      echo "=== Sources/Feature/FileA.swift (1-220) ==="
+      nl -ba Sources/Feature/FileA.swift | sed -n '1,220p'
+      echo
+      echo "=== Sources/Feature/ModuleB.swift (100-320) ==="
+      nl -ba Sources/Feature/ModuleB.swift | sed -n '100,320p'
+      echo
+      echo "=== Tests/ModuleBTests.swift (1-200) ==="
+      nl -ba Tests/ModuleBTests.swift | sed -n '1,200p'
+    } | toClip
+
 UI mangled my fenced blocks (patches with embedded ```bash, etc.)
 - Symptom: The chat UI or clipboard strips/rewraps inner fences, breaking a unified diff.
 - Quick fixes:
