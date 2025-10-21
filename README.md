@@ -4,6 +4,18 @@
 
 Clipboard-first workflow for collaborating with GPT on real codebases.
 
+Operator cheat sheet (3 steps)
+- Share this repo: run scripts/sharefiles here and paste to the assistant.
+- Share your project: cd to your repo; run sharefiles; paste the snapshot.
+- Loop per change:
+  - Run one peek bundle the assistant provides (generous windows, batched).
+  - Apply the returned patch from clipboard: applyPatch
+  - Run your short build/test script; paste logs back; repeat.
+
+Notes
+- Peeks are read-only; patches are explicit. Prefer generous peeks to avoid re-peeks.
+- Hunks in diffs should be listed bottom-to-top per file (descending order).
+
 Requirements
 - git, bash; macOS, Linux, or Windows terminal. Basic command-line literacy.
 - Clipboard access is assumed (toClip/fromClip are provided).
