@@ -31,6 +31,7 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
   - Streams stdout+stderr to terminal and copies the same output to the clipboard via toClip (tee).
   - If the chat UI mangles fenced blocks inside patches, ask the assistant for a here-doc command to write the file(s)
     locally, then review with: git diff -- path/to/file
+  - Reminder: List patch hunks in descending line order per file to reduce drift mid-apply.
 
 ## toClip and fromClip
 - Clipboard adapters. OS-agnostic shims to copy from/to clipboard.

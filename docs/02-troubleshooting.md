@@ -65,8 +65,12 @@ Out-of-band local edits
 - That's by design. The assistant batches requests so you run exactly one command per step (peek, apply, build/test).
 - If a step looks risky or unclear, say so; the assistant will simplify or explain. If the assistant asks for several separate peeks, remind them that this makes busywork for you and ask commands to always be grouped.
 
-When in doubt: re-peek small
-- The fastest way to unstick is to share a small, numbered slice of exactly what the hunk targets. The assistant will align on bytes and resend a minimal patch.  Adjust the patch size and re-peek if necessary to include the exact contents to be changed. Never guess even when you think you know.
+When in doubt: re-peek wider (with context)
+- The fastest way to unstick is to re-peek a generously sized, numbered slice around the target lines.
+- Assistant should err on the side of more context to avoid a second re-peek:
+  - For a small edit: request ±30–80 lines around the target.
+  - For a medium edit or uncertain location: request the whole function/section or ±100–200 lines.
+- Never guess bytes. Re-peek, then rebase the patch precisely.
 
 UI mangled my fenced blocks (patches with embedded ```bash, etc.)
 - Symptom: The chat UI or clipboard strips/rewraps inner fences, breaking a unified diff.

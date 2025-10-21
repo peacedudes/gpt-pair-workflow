@@ -20,7 +20,7 @@ Cadence (at a glance)
 2) Share the local working repo with assistant.
 3) Share any handoff message, and choose a goal for assistant to achieve.
 4) Iterate:
-   - Assistant requests small, read-only peeks (nl + sed).
+   - Assistant requests targeted, read-only peeks with generous context (nl + sed).
    - Operator executes peek and copies result to Assistant.
    - Assistant returns a unified diff (patch).
    - Operator applies the patch from clipboard, and if successful, runs build or tests. Clipboard contains results ready for sharing to assistant.
@@ -43,5 +43,5 @@ What this is not
 - Not tied to any language or framework or operating system.
 
 Next
-- Proceed to docs/01-quick-start.md for the step-by-step loop.
-- See docs/03-scripts.md for a concise reference to the helper scripts.
+- Proceed to 01-quick-start.md for the step-by-step loop.
+- See 03-scripts.md for a concise reference to the helper scripts.

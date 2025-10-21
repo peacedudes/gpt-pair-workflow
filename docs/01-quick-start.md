@@ -52,6 +52,12 @@ The loop
    - sed -n 'START,ENDp' prints only that range.
    - Both are read-only and safe.
    - toClip copies standard input to the clipboard.
+   - Window size guidance:
+     - Err on wider windows to avoid re-peeking later.
+     - Small edit: ±30–80 lines around the target.
+     - Medium/uncertain: ±100–200 lines or the whole function/section.
+     - Multiple ranges are OK; batch into one fenced block so the operator runs a single command.
+     - Never guess bytes—peek, then patch.
    - Typical bundle requested by the assistant:
 ```bash
 {
@@ -67,6 +73,8 @@ The loop
 ```
 3) Assistant prepares and returns a fenced code block with its patch.
    - Multi-file patches are OK only if we just peeked all touched files in one request. Otherwise, send a single-file patch and iterate.
+   - Hunks must be listed in descending line order per file (bottom-to-top) to minimize offset churn during apply.
+   - New files use --- /dev/null and +++ b/path; include the full file body in one hunk.
 4) Copy the returned patch, and apply it directly from the clipboard (applyPatch reads from the clipboard by default):
 ```bash
 applyPatch

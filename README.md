@@ -48,6 +48,7 @@ Learn more
 - Start with docs/00-overview.md (concepts, privacy, cadence), then docs/01-quick-start.md (scripts and step-by-step).
 - See docs/02-troubleshooting.md for common issues and fixes.
 - See docs/03-scripts.md for a quick reference to the helper scripts.
+- See docs/04-philosophy.md for programming philosophy, style, and expectations.
 
 ## License
 0BSD. See LICENSE.
