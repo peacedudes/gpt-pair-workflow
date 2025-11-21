@@ -29,6 +29,15 @@ Hunk length/count mismatches
 - Explanation: Expected and normal. Counts are recomputed automatically from the body.
 - Action: None, unless patch still fails; then re-peek and retry as above.
 
+No-op / “ghost” hunks
+- Symptom:
+  - git apply reports a “corrupt patch” even though the @@ header looks OK, or
+  - a hunk shows only context lines (no + or - lines), so it appears to “touch” a region without actually changing it.
+- Cause: the assistant (or a tool) emitted a hunk that doesn’t add or remove any lines, or that only twiddles whitespace in a way git doesn’t encode.
+- Fix:
+  - Regenerate the patch and ensure every hunk contains at least one + or - line.
+  - Avoid whitespace-only edits unless you’re explicitly doing a formatting pass.
+
 Triple-backtick blocks inside patches (nested fences)
 - Symptom: Chat UI or clipboard mangles a patch that contains fenced code blocks (like ```bash).
 - Fix options:
@@ -92,7 +101,7 @@ Example re-peek bundle (one command, generous windows)
     } | toClip
 
 UI mangled my fenced blocks (patches with embedded ```bash, etc.)
-- Symptom: The chat UI or clipboard strips/rewraps inner fences, breaking a unified diff.
+- Symptom: The chat UI or clipboard strips/rewraps inner fences, or drops the final newline, breaking a unified diff.
 - Quick fixes:
   - Ask the assistant for a here-doc command to write the file locally, for example:
     - cat > path/to/file <<'EOF' ... EOF
