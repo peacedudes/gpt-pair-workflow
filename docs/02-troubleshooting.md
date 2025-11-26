@@ -37,6 +37,16 @@ No-op / “ghost” hunks
 - Fix:
   - Regenerate the patch and ensure every hunk contains at least one + or - line.
   - Avoid whitespace-only edits unless you’re explicitly doing a formatting pass.
+  - As a rule: if a hunk has no + or - lines, delete it and try again; applyPatch cannot “repair” ghost hunks.
+
+Minimum context per hunk
+- Symptom:
+  - applyPatch reports a failure, even though the changed lines look correct.
+  - Hunks appear to start or end exactly on the changed lines with no surrounding context.
+- Cause: some tools (and humans) emit hunks with no unchanged prefix/suffix lines; this makes matching fragile once code shifts even a little.
+- Fix:
+  - Ensure each hunk includes at least one unchanged context line before and after the modified region.
+  - When in doubt, widen the context window (one or two extra unchanged lines above and below) so applyPatch has a stable anchor.
 
 Triple-backtick blocks inside patches (nested fences)
 - Symptom: Chat UI or clipboard mangles a patch that contains fenced code blocks (like ```bash).
