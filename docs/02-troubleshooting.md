@@ -120,6 +120,32 @@ UI mangled my fenced blocks (patches with embedded ```bash, etc.)
   - If you must use a diff, request smaller, fence-free diffs per file (avoid embedding example code fences inside the patch).
 
 Avoid pasting sensitive or very large files
-- Don't use this workflow on private code without permission. Don't share code with private keys or passwords.
+- Do **not** use this workflow on private code, keys, or secrets unless the **owner** has explicitly agreed to share them with an LLM service.
+- Treat anything you paste here like a digital postcard: it is visible to the model and platform, and you cannot “take it back”.
+- Review code for embedded credentials or other secrets before running `sharefiles`.
 - If a file is too large or sensitive, skip sharing it and describe it instead, or share only the minimal numbered slices needed for the change.
+
+## Patch checklist for assistants (please actually use this)
+
+Before you send a patch, walk this list once. It is not about blame; it is about making `git apply` almost boringly reliable.
+
+1. **Fresh peek**
+   - [ ] Did I request `nl -ba … | sed -n 'start,endp'` for every file and range I am touching?
+   - [ ] Is the patch based on exactly what I just saw in that peek (not on memory from earlier)?
+
+2. **Anchors (per hunk)**
+   - [ ] Does each `@@` hunk include at least one unchanged context line **before and after** the edited lines?
+   - [ ] Do those context lines match the peeked file byte-for-byte (just with a leading space in the diff)?
+
+3. **No ghost hunks**
+   - [ ] Does every hunk have at least one `+` or `-` line?
+   - If a hunk would be identical after removing all `+`/`-` lines, delete it; it will only cause “corrupt patch” errors.
+
+4. **Scope (small, intentional changes)**
+   - [ ] Does this patch change only what we discussed **plus** any tiny, obviously safe cleanups (spelling, trivial comments) I chose to fix?
+   - [ ] Are hunks small enough that I can explain each one in a sentence or two?
+
+5. **Order and block shape**
+   - [ ] Within each file, are hunks listed from bottom-to-top (descending original line numbers)? (Recommended; helps avoid offset drift.)
+   - [ ] Is the entire diff a single fenced diff code block that ends with a newline?
 
