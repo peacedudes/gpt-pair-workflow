@@ -33,10 +33,33 @@ No-op / “ghost” hunks
 - Symptom:
   - git apply reports a “corrupt patch” even though the @@ header looks OK, or
   - a hunk shows only context lines (no + or - lines), so it appears to “touch” a region without actually changing it.
+  - You see something like:
+
+        @@ -305,10 +328,11 @@
+          // Optional raw recording file for this listen...
+          var recordingFile: AVAudioFile?
+          if record {
+        @@ -320,13 +344,14 @@
+
+    There are **no** lines starting with `+` or `-` between those `@@` headers.
 - Cause: the assistant (or a tool) emitted a hunk that doesn’t add or remove any lines, or that only twiddles whitespace in a way git doesn’t encode.
 - Fix:
-  - Regenerate the patch and ensure every hunk contains at least one + or - line.
-  - Avoid whitespace-only edits unless you’re explicitly doing a formatting pass.
+  - Regenerate the patch and ensure every hunk contains at least one `+` or `-` line.
+  - Avoid whitespace-only edits (especially on blank-looking lines) unless you’re explicitly doing a formatting pass.
+    - If the only difference between `-` and `+` in a hunk is invisible whitespace, drop those edits unless you *intend* to reformat.
+  - As a rule: if a hunk has no `+` or `-` lines, delete that hunk and try again; applyPatch cannot “repair” ghost hunks.
+  - Quick human diagnostic:
+    - Scan for `@@` lines in the patch.
+    - If you ever see two `@@` headers with nothing but `" "` (context) lines between them, that hunk is a ghost and should be removed / regenerated.
+
+Minimum context per hunk
+- Symptom:
+  - applyPatch reports a failure, even though the changed lines look correct.
+  - Hunks appear to start or end exactly on the changed lines with no surrounding context.
+- Cause: some tools (and humans) emit hunks with no unchanged prefix/suffix lines; this makes matching fragile once code shifts even a little.
+- Fix:
+  - Ensure each hunk includes at least one unchanged context line before and after the modified region.
+  - When in doubt, widen the context window (one or two extra unchanged lines above and below) so applyPatch has a stable anchor.
 
 Triple-backtick blocks inside patches (nested fences)
 - Symptom: Chat UI or clipboard mangles a patch that contains fenced code blocks (like ```bash).
@@ -110,6 +133,45 @@ UI mangled my fenced blocks (patches with embedded ```bash, etc.)
   - If you must use a diff, request smaller, fence-free diffs per file (avoid embedding example code fences inside the patch).
 
 Avoid pasting sensitive or very large files
-- Don't use this workflow on private code without permission. Don't share code with private keys or passwords.
+- Do **not** use this workflow on private code, keys, or secrets unless the **owner** has explicitly agreed to share them with an LLM service.
+- Treat anything you paste here like a digital postcard: it is visible to the model and platform, and you cannot “take it back”.
+- Review code for embedded credentials or other secrets before running `sharefiles`.
 - If a file is too large or sensitive, skip sharing it and describe it instead, or share only the minimal numbered slices needed for the change.
+
+## Patch checklist for assistants (please actually use this)
+
+Before you send a patch, walk this list once. It is not about blame; it is about making `git apply` almost boringly reliable.
+
+1. **Fresh peek**
+   - [ ] Did I request `nl -ba … | sed -n 'start,endp'` for every file and range I am touching?
+   - [ ] Is the patch based on exactly what I just saw in that peek (not on memory from earlier)?
+
+2. **Anchors (per hunk)**
+   - [ ] Does each `@@` hunk include at least one unchanged context line **before and after** the edited lines?
+   - [ ] Do those context lines match the peeked file byte-for-byte (just with a leading space in the diff)?
+
+3. **No ghost hunks**
+   - [ ] Does every hunk have at least one `+` or `-` line?
+   - If a hunk would be identical after removing all `+`/`-` lines, delete it; it will only cause “corrupt patch” errors.
+
+4. **No accidental whitespace-only edits**
+   - If a hunk’s `-` and `+` lines differ only by spaces/tabs (especially on lines that look blank), and you are *not* doing a formatting pass, remove those edits and leave the original whitespace alone.
+   - Keep whitespace changes in their own dedicated patch/commit when you really want them.
+
+5. **Scope (small, intentional changes)**
+   - [ ] Does this patch change only what we discussed **plus** any tiny, obviously safe cleanups (spelling, trivial comments) I chose to fix?
+   - [ ] Are hunks small enough that I can explain each one in a sentence or two?
+
+6. **Order and block shape**
+   - [ ] Within each file, are hunks listed from bottom-to-top (descending original line numbers)? (Recommended; helps avoid offset drift.)
+   - [ ] Is the entire diff a single fenced diff code block that ends with a newline?
+
+For AI assistants specifically (mechanical checks):
+
+- After generating the full diff, scan **every** `@@` hunk:
+  - Confirm there is at least one line starting with `+` or `-` before the next `@@`, `---`, or `+++`.
+  - If a hunk has only `" "` (context) lines, delete that hunk or add the missing change explicitly.
+- Also scan for obvious whitespace-only changes:
+  - If a `-` / `+` pair looks identical in content except for spaces, and formatting wasn’t requested, drop that change.
+  - This avoids fragile hunks that fail to match because of invisible whitespace differences in the real file.
 
