@@ -140,7 +140,9 @@ Avoid pasting sensitive or very large files
 
 ## Patch checklist for assistants (please actually use this)
 
-Before you send a patch, walk this list once. It is not about blame; it is about making `git apply` almost boringly reliable.
+Before you send a patch, walk this checklist after emitting the patch bytes.  We've tried this many times
+and have discovered this step is /essential/ in being able to construct patches that land correctly most of the time.
+It is not about blame; it is about making `git apply` almost boringly reliable.  Consider the checklist mandatory. There will be many tests.
 
 1. **Fresh peek**
    - [ ] Did I request `nl -ba … | sed -n 'start,endp'` for every file and range I am touching?
