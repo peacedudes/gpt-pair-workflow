@@ -46,18 +46,6 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
 - Notes:
   - Used automatically by scripts/applyPatch.
 
-### xcb.sh
-- Purpose: Example: short, consistent build/test logs to clipboard for Apple/Xcode projects.
-- Usage:
-  scripts/xcb.sh build
-  scripts/xcb.sh test
-- Config:
-  - SCHEME env var selects the Xcode scheme.
-  - DEST sets the simulator destination.
-- Notes:
-  - Optional and environment-specific. Most teams should create their own stack-specific helper that captures build/test output succinctly (e.g., a Gradle/Maven/NPM/Cargo wrapper).
-  - If you're not on macOS/Xcode, treat this as a pattern to copy, not a requirement.
-
 ## General tips
 - One action per step: peek, apply, or run tests. If a step feels risky, ask for a smaller peek or a full-file replacement.
 - Unified diffs only for patches; end the block with a newline.
@@ -65,4 +53,11 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
 - Providing a source code block to replace whole files is an alternate to patch files, especially for small files.
 - Runnable shell commands must be in fenced code blocks. Avoid heredocs outside code fences (zsh can mis-handle pasted lines).
 - Important for Assistant: Any formatted text must always be placed in fenced code blocks.  Yaml, bash, scripts or code of any kind. Poetry. Anything where lines should not be run altogether.
+
+## Project-specific build and test helpers
+This repo does not prescribe a single build or test script. Instead, define small per-project aliases or scripts that:
+- Run your build or tests.
+- Limit output (for example, tail only the last 100–200 lines).
+- Pipe the output through 'toClip' so it is easy to paste back into chat.
+- The assistant can help you design these for your stack (Xcode, npm, gradle, cargo, etc.).
 

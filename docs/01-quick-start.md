@@ -13,7 +13,6 @@ Tools (scripts/)
   - sharefiles -- copies repo list and all (text) tracked files to clipboard as fenced code blocks. Paste once per session.
   - applyPatch -- reads a diff from clipboard (or file), auto-fixes hunk counts, ensures final newline, then git apply.
   - fix-diff-counts.sh -- recomputes @@ hunk lengths from the body of the changes made.
-  - xcb.sh -- sample build/test with short logs copied to clipboard (stderr+stdout). Create your own by asking GPT to make something to test your project and copy the results it wants to see to the clipboard.
   - toClip / fromClip - Agnostic clipboard adapters to copy to or paste clipboard contents to stdout.
 
 Contract (safety + cadence)
@@ -100,11 +99,12 @@ applyPatch
 5) Build/test and send short logs:
 - As early as step two, errors can occur. When they do, just paste the error to the assistant and the loop restarts.
 - Just getting to the point where there are no compile errors and testing can be done can be challenging.
-- Allowing the assistant to attempt patches without peeking first ends up feeling frustrating and wasteful.
-- Ask the assistant to create your own run or test script that's easy, limits output, and leaves results copied to clipboard.
-```bash
-xcb.sh test
-```
+- Ask the assistant to help you create a short, project-specific alias or script that runs your build or tests and copies the last part of the logs to the clipboard. For example, for an Xcode project:
+~~~bash
+test='(xcodebuild -scheme VoiceLogin -destination '\''platform=iOS Simulator,name=iPhone SE (3rd generation)'\'' test) 2>&1 | tee >(tail -n 100 | toClip)'
+~~~
+For other stacks (npm, gradle, cargo, etc.), design similar aliases with the assistant.
+Adjust scheme/destination names as you like; this is just an example.
 6) Repeat until goal has been reached. After any patch lands, the assistant re-peeks before drafting the next one.
 7) Commit changes to preserve progress as appropriate. Assistant can help, making this a copy/paste hit Return operation.
 8) Choose something to fix next.
