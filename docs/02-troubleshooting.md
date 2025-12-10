@@ -142,7 +142,12 @@ Avoid pasting sensitive or very large files
 
 Before you send a patch, walk this checklist after emitting the patch bytes.  We've tried this many times
 and have discovered this step is /essential/ in being able to construct patches that land correctly most of the time.
-It is not about blame; it is about making `git apply` almost boringly reliable.  Consider the checklist mandatory. There will be many tests.
+It is not about blame; it is about making `git apply` almost boringly reliable.  Consider the checklist mandatory.
+
+We hope to make many patches. Most of the patches that have failed to land in the past do not pass this checklist.
+The errors are trivial to fix, usually, and the checklist is to help you catch them so we won't both become frustrated or broken.
+Do NOT regard this checklist, which must be mechanically applied AFTER every patch is created, as optional.
+Failing to follow it becomes obvious quickly, because most patches will fail to land.
 
 1. **Fresh peek**
    - [ ] Did I request `nl -ba … | sed -n 'start,endp'` for every file and range I am touching?
