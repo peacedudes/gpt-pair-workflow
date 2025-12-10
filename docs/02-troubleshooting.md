@@ -176,4 +176,7 @@ For AI assistants specifically (mechanical checks):
 - Also scan for obvious whitespace-only changes:
   - If a `-` / `+` pair looks identical in content except for spaces, and formatting wasn’t requested, drop that change.
   - This avoids fragile hunks that fail to match because of invisible whitespace differences in the real file.
+- Also scan for any tab characters.
+    - Tabs do not ever appear source text, but are inserted after line numbers by 'nl' when peeking.
+    - Any tab characters found anywhere in a patch file are mistakes, and will cause the patch to fail.
 
