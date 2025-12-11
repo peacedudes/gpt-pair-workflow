@@ -140,7 +140,14 @@ Avoid pasting sensitive or very large files
 
 ## Patch checklist for assistants (please actually use this)
 
-Before you send a patch, walk this list once. It is not about blame; it is about making `git apply` almost boringly reliable.
+Before you send a patch, walk this checklist after emitting the patch bytes.  We've tried this many times
+and have discovered this step is /essential/ in being able to construct patches that land correctly most of the time.
+It is not about blame; it is about making `git apply` almost boringly reliable.  Consider the checklist mandatory.
+
+We hope to make many patches. Most of the patches that have failed to land in the past do not pass this checklist.
+The errors are trivial to fix, usually, and the checklist is to help you catch them so we won't both become frustrated or broken.
+Do NOT regard this checklist, which must be mechanically applied AFTER every patch is created, as optional.
+Failing to follow it becomes obvious quickly, because most patches will fail to land.
 
 1. **Fresh peek**
    - [ ] Did I request `nl -ba … | sed -n 'start,endp'` for every file and range I am touching?
@@ -174,4 +181,7 @@ For AI assistants specifically (mechanical checks):
 - Also scan for obvious whitespace-only changes:
   - If a `-` / `+` pair looks identical in content except for spaces, and formatting wasn’t requested, drop that change.
   - This avoids fragile hunks that fail to match because of invisible whitespace differences in the real file.
+- Also scan for any tab characters.
+    - Tabs do not ever appear source text, but are inserted after line numbers by 'nl' when peeking.
+    - Any tab characters found anywhere in a patch file are mistakes, and will cause the patch to fail.
 
