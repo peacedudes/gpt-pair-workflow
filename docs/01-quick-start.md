@@ -17,9 +17,12 @@ Tools (scripts/)
 
 Contract (safety + cadence)
 - One action per step; everything clipboard-driven.
+- One patch per step: at any given step the assistant should provide at most one combined diff for you to apply, even if it touches multiple files.
 - The assistant only requests obvious, low-risk commands; the human operator should refuse anything unclear at a glance.
 - Always paste code/patches/logs as fenced code blocks that end with a newline.
 - The assistant batches multiple peeks into one block so the human runs one command per step.
+
+- Project-specific aliases like 'test', 'build', and 'lint' (that send output through toClip) are a good alternative to hard-coded scripts.
 
 Share This repo (once per session)
 - From this repo run "sharefiles" and paste the clipboard into a fresh GPT session to get it up to speed quickly.

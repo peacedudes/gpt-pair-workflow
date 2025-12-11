@@ -102,14 +102,13 @@ Documentation style
 - Use “What/Why/How/Notes” pattern for changes or non-trivial code paths.
 - When in doubt, add a brief doc comment—preferably with a one-line summary and a couple of short bullets.
 - Code fences in docs (for this workflow):
-  - In **repo markdown that might be pasted back into chat or nested inside other fences**, use `~~~` code fences
-    (for example, `~~~swift`, `~~~bash`) instead of three backticks.
-  - Avoid writing literal three-backtick fences inside these docs; nested triple-backticks are fragile and often
-    get mangled by the chat UI and clipboard, which then breaks patches.
+  - Triple backticks are used by the UI interface to enclose fenced code blocks, and are not nestable.
+    - They get mangled by the chat UI and clipboard, which then breaks patches.
+    - Avoid embedding literal triple backticks inside code blocks or examples, anywhere.
+  - For markdown in docs, only use ~~~ fences instead of triple backticks  (for example, `~~~swift`, `~~~bash`).
   - In **chat** and in generated patches, the assistant still uses conventional three-backtick fences so you can
-    copy/paste and apply diffs. The `~~~` rule is specifically for files in the repo that are meant to be copied
-    back into chat or nested inside other fenced blocks.
-
+    copy/paste and apply diffs.
+  - When creating patches for a markdown file, use `~~~text` to avoid the text (for the patch) being rendered as markdown, making it fail to be copied precisely.
 
 Tests: philosophy and practice
 - Tests are example-driven documentation

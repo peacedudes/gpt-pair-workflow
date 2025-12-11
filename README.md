@@ -61,6 +61,7 @@ Learn more
 - See docs/02-troubleshooting.md for common issues and fixes.
 - See docs/03-scripts.md for a quick reference to the helper scripts.
 - See docs/04-philosophy.md for programming philosophy, style, and expectations.
+- See handoff.md for expectations and a quick on-ramp for new assistants (fresh GPT instances).
 
 ## License
 0BSD. See LICENSE.
