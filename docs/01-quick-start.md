@@ -54,6 +54,18 @@ Assistant first peek request (template)
 - Batch all needed peeks into one block so the operator runs a single command.
 - Never guess bytes—peek first; then patch with hunks in descending order per file.
 
+### Important: `nl -ba` Inserts TAB Delimiters
+**🚨 Do NOT Use Tabs in Code or Patches! 🚨**
+- The `nl -ba` command **inserts a literal TAB character** between the line number and the actual source text.
+- This TAB is a display delimiter only and is **not part of the file bytes**.
+  - They can, however, be relied upon to determine the beginning of the raw text.
+- **Tabs can cause complications**:
+  - They usually go undetected by the operator, and can result in mismatched search strings.
+  - Their presence in source code introduces inconsistencies across different environments or editors.
+#### Guidelines to Follow:
+- **Always filter tabs**: Ensure any patches or files are validated to exclude TAB characters.
+- **Avoid introducing tabs into patches**: Never copy this delimiter into any patches, as it will create unintended issues in your codebase.
+
 Share Your Project repo (usually once per session)
 - Right before pasting your repo snapshot is a good time to confirm a test patch, or share handoff instructions, or a goal.
 - Once you've shared your files, you're ready to begin.

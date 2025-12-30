@@ -9,6 +9,12 @@ set -euo pipefail
 awk '
 function flush_hunk(    oldLen,newLen,i) { if (!in_hunk) return; oldLen = c + d
   newLen = c + a
+  # Drop "ghost hunks" (no additions/deletions). These can be generated accidentally and
+  # may cause git apply to fail with "corrupt patch", even though they encode no change.
+  if ((a + d) == 0) {
+    in_hunk=0; nb=0; c=0; d=0; a=0; tail=""
+    return
+  }
   # Re-emit corrected header, preserving any tail after @@
   printf("@@ -%d,%d +%d,%d @@%s\n", oldStart, oldLen, newStart, newLen, tail)
   for (i=1; i<=nb; i++) print body[i]

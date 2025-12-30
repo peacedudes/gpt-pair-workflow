@@ -34,6 +34,13 @@ You must follow these patterns.
 
 - Base your diff only on what you just saw in that peek, not on memory.
 
+### Important: `nl -ba` inserts TAB delimiters in peeks
+
+- Peeks use `nl -ba`, which inserts a literal TAB character between the line number and the real file content.
+- That TAB is a display delimiter only. It is not part of the file bytes.
+- Do not introduce tabs into patches by copying peek formatting.
+- In this workflow, tabs in patches are treated as errors.
+
 ### 2. Use the patch checklist after you generate a diff
 
 After you have written a diff, mechanically walk the checklist from 'docs/02-troubleshooting.md':

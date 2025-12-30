@@ -29,6 +29,16 @@ Hunk length/count mismatches
 - Explanation: Expected and normal. Counts are recomputed automatically from the body.
 - Action: None, unless patch still fails; then re-peek and retry as above.
 
+Tabs in peeks vs tabs in patches (IMPORTANT)
+- `nl -ba` prints line numbers and inserts a literal TAB character between the number and the real file text.
+- So in a peek, lines look like they contain tabs even when the underlying file contains none.
+- Treat that TAB as a UI delimiter only:
+  - It is not part of the file bytes.
+  - It must never be introduced into patches.
+- In this workflow, patches should not contain TAB characters.
+  - If a model emits tabs (often by accident, copying the peek formatting), `git apply` can fail or the repo can gain unwanted tabs.
+  - `applyPatch` rejects TABs by default. To override (rare), set: `APPLY_PATCH_ALLOW_TABS=1`.
+
 No-op / “ghost” hunks
 - Symptom:
   - git apply reports a “corrupt patch” even though the @@ header looks OK, or
@@ -45,6 +55,8 @@ No-op / “ghost” hunks
 - Cause: the assistant (or a tool) emitted a hunk that doesn’t add or remove any lines, or that only twiddles whitespace in a way git doesn’t encode.
 - Fix:
   - Regenerate the patch and ensure every hunk contains at least one `+` or `-` line.
+  - Note: `applyPatch` runs `fix-diff-counts.sh`, which drops ghost hunks automatically. If you still see ghost-hunk symptoms,
+    your diff was likely malformed in some other way (re-peek and regenerate).
   - Avoid whitespace-only edits (especially on blank-looking lines) unless you’re explicitly doing a formatting pass.
     - If the only difference between `-` and `+` in a hunk is invisible whitespace, drop those edits unless you *intend* to reformat.
   - As a rule: if a hunk has no `+` or `-` lines, delete that hunk and try again; applyPatch cannot “repair” ghost hunks.
