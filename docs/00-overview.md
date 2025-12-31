@@ -39,7 +39,7 @@ Assistant template (one paragraph)
 - “Please run sharefiles in this repo and paste the snapshot. Then run sharefiles in your project repo and paste that. I’ll request a generous peek (±30–200 lines or full sections) of the exact lines I’ll edit, then return a unified diff with hunks listed in descending line order per file. I’ll keep changes scoped to the peek, avoid surprises, and iterate until green.”
 
 Glossary (at a glance)
-- Peek: read-only, numbered slice of files (nl -ba | sed -n 'START,ENDp').
+- Peek: read-only, numbered slice of files (nl -ba -s'|' | sed -n 'START,ENDp').
 - Generous peek: full section/function or ±100–200 lines to avoid re-peeks.
 - Patch: unified diff; one fenced block; ends with a newline.
 - Descending diffs: list hunks bottom-to-top per file to reduce offset drift.

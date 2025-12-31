@@ -34,7 +34,7 @@ Guiding principles (non-negotiable)
    - One action per step. No surprises. If anything is unclear, ask.
    - All changes must be intentional and reviewable. Small, explicit diffs only.
 2) Peek before patch
-   - Always request a precise, numbered peek (nl -ba + sed) of the exact lines you will edit—right before drafting a diff.
+   - Always request a precise, numbered peek (nl -ba -s'|' + sed) of the exact lines you will edit—right before drafting a diff.
    - Do not guess file contents or rely on memory. Drift happens; peeking prevents failure.
 3) Strict descending diffs
    - Patch hunks must apply bottom-to-top in a file. This minimizes offset churn mid-apply.
@@ -208,7 +208,7 @@ Design patterns we favor
 Example: a11y and DI seam done right (pseudo)
 Note: Examples are illustrative and stack-agnostic. Adapt patterns to your language/tooling.
 
-```swift
+~~~swift
 struct ChorusLabView: View {
     let voicesProvider: any SystemVoicesProvider
     let engineFactory: () -> RealVoiceIO
@@ -220,14 +220,14 @@ struct ChorusLabView: View {
         .accessibilityIdentifier("vk.voicesList")
     }
 }
-```
+~~~
 Key notes:
 - Inject both the provider and factory; default them in init for production.
 - Keep identifiers invisible to users; they’re for tests and clarity.
 - Add doc comments to the init describing the seams.
 
 Example: tests as usage docs (pseudo)
-```swift
+~~~swift
 final class AccessibilitySmokeTests: XCTestCase {
     @MainActor
     func testKeyControls() throws {
@@ -241,7 +241,7 @@ final class AccessibilitySmokeTests: XCTestCase {
         // ...
     }
 }
-```
+~~~
 Key notes:
 - Tests name what they prove; assertions read like documentation.
 - Fakes and identifiers make this deterministic and readable.
