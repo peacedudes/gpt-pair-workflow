@@ -37,6 +37,11 @@ After you have written a diff, mechanically walk the checklist from 'docs/02-tro
 - No tab characters (those come only from 'nl', never from the real file).
 - The whole diff is a single fenced block and ends with a newline.
 If a hunk fails any of those, fix it before you send.
+
+Practical enforcement (required):
+- Every patch response must include: `Checklist: PASS (peeked; anchored; no tabs; docs: ~~~ only)`
+- If that line is missing, the operator should not apply the patch; request a re-peek instead.
+
 ### 3. One action per step
 - One command: peek.
 - One command: applyPatch.

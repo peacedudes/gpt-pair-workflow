@@ -15,6 +15,8 @@ Operator cheat sheet (3 steps)
 Notes
 - Peeks are read-only; patches are explicit. Prefer generous peeks to avoid re-peeks.
 - Hunks in diffs should be listed bottom-to-top per file (descending order).
+- Avoid anchorless hunks: every `@@` hunk must include real, unchanged context lines above and below.
+- Prefer small hunks: one clear change per hunk beats a huge “miles of context” hunk.
 
 Requirements
 - git, bash; macOS, Linux, or Windows terminal. Basic command-line literacy.

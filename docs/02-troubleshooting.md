@@ -60,8 +60,8 @@ There are **no** lines starting with `+` or `-` between those `@@` headers.
 - Fix:
   - Ensure each hunk includes at least one unchanged context line before and after the modified region.
   - When in doubt, widen the context window (one or two extra unchanged lines above and below) so `applyPatch` has a stable anchor.
-## Triple-backtick blocks inside patches (nested fences)
-- Symptom: Chat UI or clipboard mangles a patch that contains fenced code blocks (like ```bash).
+## Nested fences inside patches (avoid them in docs)
+- Symptom: Chat UI or clipboard mangles a patch that contains fenced code blocks (for example, a markdown block inside a diff).
 - Fix options:
   - The assistant uses only unified diff fences for patches; internal example fences are allowed and should be preserved.
   - If your UI still mangles them, ask for a "full-file replacement" instead of a diff for that file, or request a here-doc shell command to write the file bytes locally and then git diff it yourself.
@@ -114,7 +114,7 @@ There are **no** lines starting with `+` or `-` between those `@@` headers.
 } | toClip
 ~~~
 
-UI mangled my fenced blocks (patches with embedded ```bash, etc.)
+UI mangled my fenced blocks (patches with embedded ~~~bash, etc.)
 - Symptom: The chat UI or clipboard strips/rewraps inner fences, or drops the final newline, breaking a unified diff.
 - Quick fixes:
   - Ask the assistant for a here-doc command to write the file locally, for example:
@@ -128,6 +128,67 @@ Avoid pasting sensitive or very large files
 - Treat anything you paste here like a digital postcard: it is visible to the model and platform, and you cannot “take it back”.
 - Review code for embedded credentials or other secrets before running `sharefiles`.
 - If a file is too large or sensitive, skip sharing it and describe it instead, or share only the minimal numbered slices needed for the change.
+
+## Avoid anchorless hunks (a common AI failure mode)
+- Problem: assistants sometimes emit hunks with no stable context (“anchorless hunks”). These often fail with:
+  - `error: corrupt patch at line N`, or
+  - `error: while searching for: ...`
+- Rule: every `@@` hunk must include **real, unchanged context lines** before and after the edited lines.
+- Bad (anchorless) hunk example (do not send):
+~~~diff
+@@ -240,0 +241,3 @@
++new line
++another new line
++third new line
+~~~
+- Better: include unchanged lines above and below so `git apply` can match:
+~~~diff
+@@ -238,5 +238,6 @@
+  func foo() {
+      bar()
++     baz()
+      qux()
+  }
+~~~
+
+## Prefer small hunks (easier to debug, higher apply rate)
+- Huge hunks with “miles of context” are fragile and hard to troubleshoot when they fail.
+- Prefer multiple small hunks, each with one clear intent, and a few stable context lines.
+- If a patch fails:
+  - stop
+  - re-peek the exact region
+  - regenerate a small, well-anchored hunk from the peek
+
+## Never invent anchors (patch context must match the peek)
+- A common AI failure mode is to “patch what the file probably says” instead of what the peek shows.
+- Rule: every context line in a diff must be copied exactly from the most recent peek.
+- If you can’t find a good anchor in the peek, request a re-peek with a wider window.
+
+## Suffix anchors for insertions (especially important)
+- Insertions need stable context *before* and *after* the inserted block.
+- Avoid using a blank line as your only suffix anchor; anchor to a real line (often the next header).
+
+Mini gallery (good vs bad)
+
+- Bad: anchorless insertion (fragile; likely to fail)
+~~~diff
+@@ -240,0 +241,3 @@
++new line
++another new line
++third new line
+~~~
+
+- Good: insertion with a real suffix anchor line
+~~~diff
+@@ -38,7 +38,10 @@
+ If a hunk fails any of those, fix it before you send.
+
++Practical enforcement (required):
++- Every patch response must include: `Checklist: PASS (peeked; anchored; no tabs; docs: ~~~ only)`
+
+ ### 3. One action per step
+ - One command: peek.
+~~~
 
 ## Patch checklist for assistants (please actually use this)
 
@@ -143,10 +204,12 @@ Failing to follow it becomes obvious quickly, because most patches will fail to 
 1. **Fresh peek**
    - [ ] Did I request `nl -ba … | sed -n 'start,endp'` for every file and range I am touching?
    - [ ] Is the patch based on exactly what I just saw in that peek (not on memory from earlier)?
+   - [ ] Did I avoid inventing/paraphrasing anchor text that "seems like it should be there"?
 
 2. **Anchors (per hunk)**
    - [ ] Does each `@@` hunk include at least one unchanged context line **before and after** the edited lines?
    - [ ] Do those context lines match the peeked file byte-for-byte (just with a leading space in the diff)?
+   - [ ] For insertions: do I have a real suffix anchor line after the inserted block (not a blank line)?
 
 3. **No ghost hunks**
    - [ ] Does every hunk have at least one `+` or `-` line?
