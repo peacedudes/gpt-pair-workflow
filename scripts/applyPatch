@@ -47,6 +47,19 @@ fi
 echo "applyPatch: fixing hunk counts…"
 "$fixer" "$tmp_in" > "$tmp_fixed"
 
+if [[ "${APPLY_PATCH_ALLOW_TABS:-0}" != "1" ]]; then
+  tab_hits="$(LC_ALL=C grep -n $'\t' "$tmp_fixed" | head -n 5 || true)"
+  if [[ -n "$tab_hits" ]]; then
+    echo "applyPatch: ERROR: patch contains TAB characters. This workflow treats that as a mistake."
+    echo "applyPatch: Rationale: peeks use 'nl -ba', which inserts a TAB delimiter after the line number."
+    echo "applyPatch: Do not copy that delimiter into patches; source files should not gain tabs accidentally."
+    echo "applyPatch: First TAB occurrences (line:content):"
+    printf "%s\n" "$tab_hits"
+    echo "applyPatch: If you truly need tabs in a patch, re-run with APPLY_PATCH_ALLOW_TABS=1."
+    exit 1
+  fi
+fi
+
 echo "applyPatch: git apply --check …"
 git apply --check -v "$tmp_fixed"
 echo "applyPatch: check OK."

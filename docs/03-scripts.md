@@ -27,7 +27,11 @@ These helpers keep the loop fast and consistent. They are small, transparent, an
   - applyPatch path/to/patch.diff  # read from file
 - Behavior:
   - Recomputes hunk lengths with fix-diff-counts.sh and ensures a trailing newline.
+  - Drops "ghost hunks" (hunks with no `+`/`-` lines) via fix-diff-counts.sh.
+  - Rejects TAB characters in patches by default (to avoid accidentally copying `nl -ba` delimiters into real files).
+    - Override (rare): set `APPLY_PATCH_ALLOW_TABS=1`.
   - Runs git apply --check first, then applies if clean.
+  - Prefers `nl -ba -s'|'` for peeks to avoid inserting TAB characters.
   - Streams stdout+stderr to terminal and copies the same output to the clipboard via toClip (tee).
   - If the chat UI mangles fenced blocks inside patches, ask the assistant for a here-doc command to write the file(s)
     locally, then review with: git diff -- path/to/file
